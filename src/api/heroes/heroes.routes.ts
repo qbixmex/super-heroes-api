@@ -5,5 +5,9 @@ import * as HeroesController from './heroes.controller';
 const router = Router();
 
 router.get('/', HeroesController.heroes);
+router.get('/:id', HeroesController.hero);
+router.post('/', HeroesController.create);
+router.patch('/:id', HeroesController.update);
+router.delete('/:id', HeroesController.destroy);
 
 export default router;
