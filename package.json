@@ -1,6 +1,6 @@
 {
   "name": "super-heroes-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Restfull API with Express and Typescript",
   "main": "src/index.ts",
   "scripts": {
@@ -17,6 +17,10 @@
     "jest"
   ],
   "author": "Daniel González Briseño",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qbixmex/super-heroes-api"
+  },
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
