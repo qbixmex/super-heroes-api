@@ -57,7 +57,7 @@ export async function create(
     if (Object.keys(request.body).length === 0) {
       return response.status(400).json({
         ok: false,
-        message: 'Empty content!',
+        message: 'Body cannot be empty!',
       });
     }
 

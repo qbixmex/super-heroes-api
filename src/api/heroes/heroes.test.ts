@@ -83,6 +83,18 @@ describe('GET /api/v1/heroes/:id', () => {
 });
 
 describe('POST /api/v1/heroes', () => {
+  test.only('Responds with status 400 if user send empty body', async () => {
+    await request(app)
+      .post('/api/v1/heroes')
+      .set('Accept', 'application/json')
+      .send({})
+      .expect('Content-Type', /application\/json/)
+      .expect(400)
+      .then(response => {
+        expect(response.body.ok).toBe(false);
+        expect(response.body.message).toBe('Body cannot be empty!');
+      });
+  });
   test('Responds with response 201', async () => {
     await request(app)
       .post('/api/v1/heroes')
