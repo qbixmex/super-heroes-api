@@ -202,6 +202,18 @@ describe('DELETE /api/v1/heroes/:id', () => {
         expect(response.body.message).toBe(`ID: "${id}" is not a valid MongoID`);
       });
   });
+  test('Responds with status code 404 hero is not found', async () => {
+    const id = '6385cbca684dd769f24c045d';
+    await request(app)
+      .delete(`/api/v1/heroes/${id}`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(404)
+      .then(response => {
+        expect(response.body.ok).toBe(false);
+        expect(response.body.message).toBe(`Hero with "${id}" does not exist!`);
+      });
+  });
   test('Responds with response 200 after hero deleted', async () => {
     await request(app)
       .delete(`/api/v1/heroes/${spidermanId}`)

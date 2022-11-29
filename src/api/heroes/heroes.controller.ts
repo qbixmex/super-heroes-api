@@ -138,7 +138,15 @@ export async function destroy(
       });
     }
 
-    await Hero.findOneAndDelete({ _id: id });
+    const deletedHero = await Hero.findOneAndDelete({ _id: id });
+
+    if (!deletedHero) {
+      return response.status(404).json({
+        ok: false,
+        message: `Hero with "${id}" does not exist!`,
+      });
+    }
+
     return response.status(200).json({ ok: true });
 
   } catch (error) {
