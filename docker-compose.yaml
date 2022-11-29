@@ -1,8 +1,16 @@
 services:
-  heroesdb:
+  heroes_development:
+    container_name: heroes-development-db
     image: mongo:5.0.14
-    container_name: heroes-database
     ports:
       - 27017:27017
     volumes:
-      - ./mongo:/data/db
+      - ./mongo/db-mongo-dev:/data/db
+
+  heroes_test:
+    container_name: heroes-test-db
+    image: mongo:5.0.14
+    ports:
+      - 27018:27017
+    volumes:
+      - ./mongo/db-mongo-test:/data/db

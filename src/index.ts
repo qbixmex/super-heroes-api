@@ -8,7 +8,5 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 app.listen(PORT, () => {
-  /* eslint-disable no-console */
   console.log(`Listening on port: ${PORT}`);
-  /* eslint-enable no-console */
 });

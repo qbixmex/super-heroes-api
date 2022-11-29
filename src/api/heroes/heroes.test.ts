@@ -23,7 +23,7 @@ let ironmanId = '';
 
 beforeEach(async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI!);
+    await mongoose.connect(process.env.MONGO_URI_TEST!);
     await Hero.deleteMany({});
     const spiderman = await Hero.create(heroesList[0]);
     const ironman = await Hero.create(heroesList[1]);
