@@ -59,14 +59,7 @@ export async function create(
   response: Response,
   next: NextFunction,
 ) {
-  try {
-    // Validation if user did not send any data
-    if (Object.keys(request.body).length === 0) {
-      return response.status(400).json({
-        ok: false,
-        message: 'Body cannot be empty!',
-      });
-    }
+  try {    
 
     const hero = await Hero.create(request.body);
 

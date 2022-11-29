@@ -94,17 +94,63 @@ describe('GET /api/v1/heroes/:id', () => {
   });
 });
 
-describe('POST /api/v1/heroes', () => {
-  test('Responds with status 400 if user send empty body', async () => {
+describe.only('POST /api/v1/heroes', () => {
+  test('Responds with status 400 if hero name is empty', async () => {
     await request(app)
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
-      .send({})
+      .send({
+        realName: 'Peter Parker',
+        studio: 'Marvel',
+      })
       .expect('Content-Type', /application\/json/)
       .expect(400)
       .then(response => {
-        expect(response.body.ok).toBe(false);
-        expect(response.body.message).toBe('Body cannot be empty!');
+        expect(response.body.errors[0].msg).toBe('Hero name is required!');
+      });
+  });
+  test('Responds with status 400 if hero name is already exist', async () => {
+    await request(app)
+      .post('/api/v1/heroes')
+      .set('Accept', 'application/json')
+      .send({
+        heroName: 'Spiderman',
+        realName: 'Peter Parker',
+        studio: 'Marvel',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400)
+      .then(response => {
+        expect(response.body.errors[0].msg)
+          .toBe('Hero name "Spiderman" already exists!');
+      });
+  });
+  test('Responds with status 400 if hero real name is empty', async () => {
+    await request(app)
+      .post('/api/v1/heroes')
+      .set('Accept', 'application/json')
+      .send({
+        heroName: 'Hulk',        
+        studio: 'Marvel',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400)
+      .then(response => {
+        expect(response.body.errors[0].msg).toBe('Hero real name is required!');
+      });
+  });
+  test('Responds with status 400 if studio is empty', async () => {
+    await request(app)
+      .post('/api/v1/heroes')
+      .set('Accept', 'application/json')
+      .send({
+        heroName: 'Hulk',
+        realName: 'Steve Banner',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400)
+      .then(response => {
+        expect(response.body.errors[0].msg).toBe('Studio is required!');
       });
   });
   test('Responds with response 201', async () => {
@@ -112,8 +158,8 @@ describe('POST /api/v1/heroes', () => {
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
       .send({
-        heroName: 'Spiderman',
-        realName: 'Peter Parker',
+        heroName: 'Scarlet Witch',
+        realName: 'Wanda',
         studio: 'Marvel',
       })
       .expect('Content-Type', /application\/json/)
