@@ -1,0 +1,8 @@
+services:
+  heroesdb:
+    image: mongo:5.0.14
+    container_name: heroes-database
+    ports:
+      - 27017:27017
+    volumes:
+      - ./mongo:/data/db

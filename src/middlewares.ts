@@ -1,7 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { ZodError } from 'zod';
-
-import { ErrorResponse, RequestValidators } from './interfaces';
+import { ErrorResponse } from './interfaces';
 
 export function notFount(
   request: Request,
@@ -25,29 +23,6 @@ export function errorHandler(
     message: error.message,
     stack: process.env.NODE_ENV === 'production' ? '🥞' : error.stack,
   });
-  next(); // TODO CHECK IF THIS DOES NOT THROWN AN ERROR!
+  next();
 }
 
-export function validateRequest(validators: RequestValidators) {
-  return async function (
-    request: Request,
-    response: Response,
-    next: NextFunction,
-  ) {
-    try {
-      if (validators.params) {
-        request.params = await validators.params.parseAsync(request.params);
-      }
-      if (validators.body) {
-        request.body = await validators.body.parseAsync(request.body);
-      }
-      if (validators.query) {
-        request.query = await validators.query.parseAsync(request.query);
-      }
-      next();
-    } catch (error) {
-      if (error instanceof ZodError) response.status(422);
-      next(error);
-    }
-  };
-}

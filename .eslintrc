@@ -22,7 +22,9 @@
     "camelcase": 0,
     "import/extensions": 0,
     "@typescript-eslint/no-redeclare": 0,
-    "@typescript-eslint/no-unused-vars": "warn"
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/quotes": "warn",
+    "import/no-extraneous-dependencies": "warn"
   },
   "settings": {
     "import/parsers": {
