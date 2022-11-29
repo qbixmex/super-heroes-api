@@ -49,7 +49,7 @@ describe('GET /api/v1/heroes', () => {
   });
 });
 
-describe('GET /api/v1/heroes/:id', () => {
+describe('GET /api/v1/heroes/:id', () => {  
   test('Responds with status code 400 if id is not valid', async () => {
     const id = 123;
     await request(app)
@@ -60,6 +60,18 @@ describe('GET /api/v1/heroes/:id', () => {
       .then(response => {
         expect(response.body.ok).toBe(false);
         expect(response.body.message).toBe(`ID: "${id}" is not a valid MongoID`);
+      });
+  });
+  test('Responds with status code 404 hero is not found', async () => {
+    const id = '6385cbca684dd769f24c045d';
+    await request(app)
+      .get(`/api/v1/heroes/${id}`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(404)
+      .then(response => {
+        expect(response.body.ok).toBe(false);
+        expect(response.body.message).toBe(`Hero with "${id}" does not exist!`);
       });
   });
   test('Responds with a single hero object', async () => {
@@ -83,7 +95,7 @@ describe('GET /api/v1/heroes/:id', () => {
 });
 
 describe('POST /api/v1/heroes', () => {
-  test.only('Responds with status 400 if user send empty body', async () => {
+  test('Responds with status 400 if user send empty body', async () => {
     await request(app)
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
@@ -123,6 +135,34 @@ describe('PATCH /api/v1/heroes/:id', () => {
       .then(response => {
         expect(response.body.ok).toBe(false);
         expect(response.body.message).toBe(`ID: "${id}" is not a valid MongoID`);
+      });
+  });
+  test('Responds with status 400 if user send empty body', async () => {
+    await request(app)
+      .patch(`/api/v1/heroes/${ironmanId}`)
+      .set('Accept', 'application/json')
+      .send({})
+      .expect('Content-Type', /application\/json/)
+      .expect(400)
+      .then(response => {
+        expect(response.body.ok).toBe(false);
+        expect(response.body.message).toBe('Body cannot be empty!');
+      });
+  });
+  test('Responds with status code 404 hero is not found', async () => {
+    const id = '6385cbca684dd769f24c045d';
+    await request(app)
+      .patch(`/api/v1/heroes/${id}`)
+      .set('Accept', 'application/json')
+      .send({
+        heroName: 'Ironman Updated',
+        realName: 'Tony Stark Updated',
+      })
+      .expect('Content-Type', /json/)
+      .expect(404)
+      .then(response => {
+        expect(response.body.ok).toBe(false);
+        expect(response.body.message).toBe(`Hero with "${id}" does not exist!`);
       });
   });
   test('Responds with response 200', async () => {

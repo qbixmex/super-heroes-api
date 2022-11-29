@@ -37,6 +37,13 @@ export async function heroDetails(
 
     const hero = await Hero.findOne({ _id: id });
 
+    if (!hero) {
+      return response.status(404).json({
+        ok: false,
+        message: `Hero with "${id}" does not exist!`,
+      });
+    }
+
     return response.status(200).json({
       ok: true,
       hero,
@@ -81,17 +88,31 @@ export async function update(
 ) {
   try {
     const id = request.params.id;
+    const body = request.body;
 
     if (!mongoose.Types.ObjectId.isValid(request.params.id)) {
       return response.status(400).json({
         ok: false,
         message: `ID: "${id}" is not a valid MongoID`,
       });
+    }    
+
+    // Validation if user did not send any data
+    if (Object.keys(body).length === 0) {
+      return response.status(400).json({
+        ok: false,
+        message: 'Body cannot be empty!',
+      });
     }
 
-    const body = request.body;
-
     const updatedHero = await Hero.findOneAndUpdate({ _id: id }, body, { new: true });
+
+    if (!updatedHero) {
+      return response.status(404).json({
+        ok: false,
+        message: `Hero with "${id}" does not exist!`,
+      });
+    }
 
     return response.status(200).json({
       ok: true,
