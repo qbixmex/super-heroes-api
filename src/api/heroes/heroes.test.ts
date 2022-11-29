@@ -50,6 +50,18 @@ describe('GET /api/v1/heroes', () => {
 });
 
 describe('GET /api/v1/heroes/:id', () => {
+  test('Responds with status code 400 if id is not valid', async () => {
+    const id = 123;
+    await request(app)
+      .get(`/api/v1/heroes/${id}`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(400)
+      .then(response => {
+        expect(response.body.ok).toBe(false);
+        expect(response.body.message).toBe(`ID: "${id}" is not a valid MongoID`);
+      });
+  });
   test('Responds with a single hero object', async () => {
     await request(app)
       .get(`/api/v1/heroes/${spidermanId}`)
@@ -89,6 +101,18 @@ describe('POST /api/v1/heroes', () => {
 });
 
 describe('PATCH /api/v1/heroes/:id', () => {
+  test('Responds with status code 400 if id is not valid', async () => {
+    const id = 123;
+    await request(app)
+      .patch(`/api/v1/heroes/${id}`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(400)
+      .then(response => {
+        expect(response.body.ok).toBe(false);
+        expect(response.body.message).toBe(`ID: "${id}" is not a valid MongoID`);
+      });
+  });
   test('Responds with response 200', async () => {
     await request(app)
       .patch(`/api/v1/heroes/${ironmanId}`)
@@ -114,6 +138,18 @@ describe('PATCH /api/v1/heroes/:id', () => {
 });
 
 describe('DELETE /api/v1/heroes/:id', () => {
+  test('Responds with status code 400 if id is not valid', async () => {
+    const id = 123;
+    await request(app)
+      .delete(`/api/v1/heroes/${id}`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(400)
+      .then(response => {
+        expect(response.body.ok).toBe(false);
+        expect(response.body.message).toBe(`ID: "${id}" is not a valid MongoID`);
+      });
+  });
   test('Responds with response 200 after hero deleted', async () => {
     await request(app)
       .delete(`/api/v1/heroes/${spidermanId}`)

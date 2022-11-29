@@ -1,4 +1,5 @@
 import { Response, Request, NextFunction } from 'express';
+import mongoose from 'mongoose';
 
 import Hero from './heroes.model';
 
@@ -24,7 +25,16 @@ export async function heroDetails(
   next: NextFunction,
 ) {
   try {
+
     const id = request.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(request.params.id)) {
+      return response.status(400).json({
+        ok: false,
+        message: `ID: "${id}" is not a valid MongoID`,
+      });
+    }
+
     const hero = await Hero.findOne({ _id: id });
 
     return response.status(200).json({
@@ -71,6 +81,14 @@ export async function update(
 ) {
   try {
     const id = request.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(request.params.id)) {
+      return response.status(400).json({
+        ok: false,
+        message: `ID: "${id}" is not a valid MongoID`,
+      });
+    }
+
     const body = request.body;
 
     const updatedHero = await Hero.findOneAndUpdate({ _id: id }, body, { new: true });
@@ -91,8 +109,17 @@ export async function destroy(
 ) {
   try {
     const id = request.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(request.params.id)) {
+      return response.status(400).json({
+        ok: false,
+        message: `ID: "${id}" is not a valid MongoID`,
+      });
+    }
+
     await Hero.findOneAndDelete({ _id: id });
     return response.status(200).json({ ok: true });
+
   } catch (error) {
     next(error);
   }
