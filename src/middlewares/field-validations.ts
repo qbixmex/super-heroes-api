@@ -6,13 +6,10 @@ export function fieldValidation(
   response: Response,
   next: NextFunction,
 ) {
-
-  const errors = validationResult(request);
-
-  if (!errors.isEmpty()) {
-    return response.status(400).json(errors);
+  try {
+    validationResult(request).throw();
+    return next();
+  } catch (errors) {
+    response.status(400).json(errors);
   }
-
-  next();
-
 }

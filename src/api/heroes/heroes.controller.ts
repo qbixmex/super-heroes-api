@@ -76,36 +76,20 @@ export async function update(
   next: NextFunction,
 ) {
   try {
+
     const id = request.params.id;
-    const body = request.body;
 
-    if (!mongoose.Types.ObjectId.isValid(request.params.id)) {
-      return response.status(400).json({
-        ok: false,
-        message: `ID: "${id}" is not a valid MongoID`,
-      });
-    }
-
-    if (Object.keys(body).length === 0) {
-      return response.status(400).json({
-        ok: false,
-        message: 'Body cannot be empty!',
-      });
-    }
-
-    const updatedHero = await Hero.findOneAndUpdate({ _id: id }, body, { new: true });
-
-    if (!updatedHero) {
-      return response.status(404).json({
-        ok: false,
-        message: `Hero with "${id}" does not exist!`,
-      });
-    }
+    const updatedHero = await Hero.findOneAndUpdate(
+      { _id: id },
+      request.body,
+      { new: true },
+    );
 
     return response.status(200).json({
       ok: true,
       hero: updatedHero,
     });
+
   } catch (error) {
     next(error);
   }

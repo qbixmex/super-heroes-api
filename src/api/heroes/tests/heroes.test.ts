@@ -158,27 +158,12 @@ describe('POST /api/v1/heroes', () => {
 describe('PATCH /api/v1/heroes/:id', () => {
   test('Responds with status code 400 if id is not valid', async () => {
     const id = 123;
-    await request(app)
+    const response = await request(app)
       .patch(`/api/v1/heroes/${id}`)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
-      .expect(400)
-      .then(response => {
-        expect(response.body.ok).toBe(false);
-        expect(response.body.message).toBe(`ID: "${id}" is not a valid MongoID`);
-      });
-  });
-  test('Responds with status 400 if user send empty body', async () => {
-    await request(app)
-      .patch(`/api/v1/heroes/${ironmanId}`)
-      .set('Accept', 'application/json')
-      .send({})
-      .expect('Content-Type', /application\/json/)
-      .expect(400)
-      .then(response => {
-        expect(response.body.ok).toBe(false);
-        expect(response.body.message).toBe('Body cannot be empty!');
-      });
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Provided id is not a valid Mongo ID');
   });
   test('Responds with status code 404 hero is not found', async () => {
     const id = '6385cbca684dd769f24c045d';
@@ -190,14 +175,22 @@ describe('PATCH /api/v1/heroes/:id', () => {
         realName: 'Tony Stark Updated',
       })
       .expect('Content-Type', /json/)
-      .expect(404)
+      .expect(400)
       .then(response => {
-        expect(response.body.ok).toBe(false);
-        expect(response.body.message).toBe(`Hero with "${id}" does not exist!`);
+        expect(response.body.errors[0].msg).toBe(`Hero with "${id}" does not exist!`);
       });
   });
+  test('Responds with status 400 if user send empty body', async () => {
+    const response = await request(app)
+      .patch('/api/v1/heroes/' + ironmanId)
+      .send({})
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Body cannot be empty!');
+  });
   test('Responds with response 200', async () => {
-    await request(app)
+    const response = await request(app)
       .patch(`/api/v1/heroes/${ironmanId}`)
       .set('Accept', 'application/json')
       .send({
@@ -205,18 +198,16 @@ describe('PATCH /api/v1/heroes/:id', () => {
         realName: 'Tony Stark Updated',
       })
       .expect('Content-Type', /application\/json/)
-      .expect(200)
-      .then(response => {
-        expect(response.body.ok).toBe(true);
-        expect(response.body.hero).toEqual({
-          _id: ironmanId,
-          heroName: 'Ironman Updated',
-          realName: 'Tony Stark Updated',
-          studio: heroesList[0].studio,
-          createdAt: expect.any(String),
-          updatedAt: expect.any(String),
-        });
-      });
+      .expect(200);
+    expect(response.body.ok).toBe(true);
+    expect(response.body.hero).toEqual({
+      _id: ironmanId,
+      heroName: 'Ironman Updated',
+      realName: 'Tony Stark Updated',
+      studio: heroesList[0].studio,
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
+    });
   });
 });
 
