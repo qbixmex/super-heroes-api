@@ -5,7 +5,6 @@ import Hero from '../heroes.model';
 import app from '../../../app';
 import { heroesList } from './heroes.fixtures';
 
-
 let spidermanId = '';
 let ironmanId = '';
 
@@ -13,10 +12,17 @@ beforeEach(async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI_TEST!);
     await Hero.deleteMany({});
-    const spiderman = await Hero.create(heroesList[0]);
-    const ironman = await Hero.create(heroesList[1]);
-    spidermanId = `${spiderman._id}`;
-    ironmanId = `${ironman._id}`;
+
+    for (let i = 0; i < heroesList.length; i++) {
+      await Hero.create(heroesList[i]);
+    }
+
+    const spiderman = await Hero.findOne({ heroName: 'Spiderman' }).select('_id');
+    const ironman = await Hero.findOne({ heroName: 'Ironman' }).select('_id');
+
+    spidermanId = String(spiderman?._id);
+    ironmanId = String(ironman?._id);
+
   } catch (error) {
     console.log(error);
   }
@@ -32,6 +38,16 @@ describe('GET /api/v1/heroes', () => {
     expect(response.body.ok).toBe(true);
     expect(response.body.heroes).toBeTruthy();
     expect(response.body.heroes.length).toBe(heroesList.length);
+  });
+  test('Show a limited list with provided query param', async () => {
+    const limit = 4;
+    const response = await request(app)
+      .get(`/api/v1/heroes?limit=${limit}`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /application\/json/)
+      .expect(200);
+    expect(response.body.ok).toBe(true);
+    expect(response.body.heroes.length).toBe(limit);
   });
 });
 

@@ -4,16 +4,16 @@ import mongoose from 'mongoose';
 import Hero from './heroes.model';
 
 export async function heroesList(
-  _: Request,
+  request: Request,
   response: Response,
   next: NextFunction,
 ) {
   try {
-    const heroes = await Hero.find();
-    return response.status(200).json({
-      ok: true,
-      heroes,
-    });
+    const { limit = 10 } = request.query;
+    const heroes = await Hero.find().limit(Number(limit));
+
+    return response.status(200).json({ ok: true, heroes });
+
   } catch (error) {
     next(error);
   }

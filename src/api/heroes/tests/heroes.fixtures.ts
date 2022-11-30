@@ -11,4 +11,24 @@ export const heroesList: HeroInterface[] = [
     realName: 'Tony Stark',
     studio: 'Marvel',
   },
+  {
+    heroName: 'Captain America',
+    realName: 'Steve Rogers',
+    studio: 'Marvel',
+  },
+  {
+    heroName: 'Super Man',
+    realName: 'Clark Kent',
+    studio: 'DC',
+  },
+  {
+    heroName: 'Batman',
+    realName: 'Bruce Wayne',
+    studio: 'DC',
+  },
+  {
+    heroName: 'Wonder Woman',
+    realName: 'Princes Diana',
+    studio: 'DC',
+  },
 ];

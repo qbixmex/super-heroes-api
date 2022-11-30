@@ -1,6 +1,7 @@
 import { Schema, model } from 'mongoose';
+import { HeroInterface } from '../../interfaces/hero.interface';
 
-const HeroSchema = new Schema({
+const HeroSchema = new Schema<HeroInterface>({
   heroName: {
     type: String,
     required: [true, 'Hero Name is Required!'],
@@ -19,4 +20,4 @@ const HeroSchema = new Schema({
   collection: 'heroes',
 });
 
-export default model('Hero', HeroSchema);
+export default model<HeroInterface>('Hero', HeroSchema);
