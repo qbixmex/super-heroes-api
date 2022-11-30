@@ -27,15 +27,7 @@ export async function heroDetails(
   try {
 
     const id = request.params.id;
-
     const hero = await Hero.findOne({ _id: id });
-
-    // if (!hero) {
-    //   return response.status(404).json({
-    //     ok: false,
-    //     message: `Hero with "${id}" does not exist!`,
-    //   });
-    // }
 
     return response.status(200).json({
       ok: true,
@@ -96,21 +88,7 @@ export async function destroy(
   try {
     const id = request.params.id;
 
-    if (!mongoose.Types.ObjectId.isValid(request.params.id)) {
-      return response.status(400).json({
-        ok: false,
-        message: `ID: "${id}" is not a valid MongoID`,
-      });
-    }
-
-    const deletedHero = await Hero.findOneAndDelete({ _id: id });
-
-    if (!deletedHero) {
-      return response.status(404).json({
-        ok: false,
-        message: `Hero with "${id}" does not exist!`,
-      });
-    }
+    await Hero.findOneAndDelete({ _id: id });
 
     return response.status(200).json({ ok: true });
 

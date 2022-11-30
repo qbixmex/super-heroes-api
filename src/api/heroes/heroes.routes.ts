@@ -30,6 +30,10 @@ router.patch('/:id', [
   fieldValidation,
 ], HeroesController.update);
 
-router.delete('/:id', HeroesController.destroy);
+router.delete('/:id', [
+  check('id', 'Provided id is not a valid Mongo ID').isMongoId(),
+  check('id').custom(isHeroExistById),
+  fieldValidation,
+], HeroesController.destroy);
 
 export default router;

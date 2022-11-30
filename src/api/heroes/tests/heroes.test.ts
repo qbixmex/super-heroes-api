@@ -24,57 +24,49 @@ beforeEach(async () => {
 
 describe('GET /api/v1/heroes', () => {
   test('Responds with a empty heroes array', async () => {
-    await request(app)
+    const response = await request(app)
       .get('/api/v1/heroes')
       .set('Accept', 'application/json')
       .expect('Content-Type', /application\/json/)
-      .expect(200)
-      .then(response => {
-        expect(response.body.ok).toBe(true);
-        expect(response.body.heroes).toBeTruthy();
-        expect(response.body.heroes.length).toBe(heroesList.length);
-      });
+      .expect(200);
+    expect(response.body.ok).toBe(true);
+    expect(response.body.heroes).toBeTruthy();
+    expect(response.body.heroes.length).toBe(heroesList.length);
   });
 });
 
 describe('GET /api/v1/heroes/:id', () => {  
   test('Responds with status code 400 if id is not valid', async () => {
     const id = 123;
-    await request(app)
+    const response = await request(app)
       .get(`/api/v1/heroes/${id}`)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
-      .expect(400)
-      .then(response => {
-        expect(response.body.errors[0].msg).toBe('Provided id is not a valid Mongo ID');
-      });
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Provided id is not a valid Mongo ID');
   });
   test('Responds with status code 404 hero is not found', async () => {
     const id = '6385cbca684dd769f24c045d';
-    await request(app)
+    const response = await request(app)
       .get(`/api/v1/heroes/${id}`)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
-      .expect(400)
-      .then(response => {
-        expect(response.body.errors[0].msg).toBe(`Hero with "${id}" does not exist!`);
-      });
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe(`Hero with "${id}" does not exist!`);
   });
   test('Responds with a single hero object', async () => {
-    await request(app)
+    const response = await request(app)
       .get(`/api/v1/heroes/${spidermanId}`)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
-      .expect(200)
-      .then(response => {
-        expect(response.body.ok).toBe(true);
-        expect(response.body.hero).toEqual({
-          _id: spidermanId,
-          ...heroesList[0],
-          createdAt: expect.any(String),
-          updatedAt: expect.any(String),
-        });
-      });
+      .expect(200);
+    expect(response.body.ok).toBe(true);
+    expect(response.body.hero).toEqual({
+      _id: spidermanId,
+      ...heroesList[0],
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
+    });
   });
 });
 
@@ -210,37 +202,29 @@ describe('PATCH /api/v1/heroes/:id', () => {
 describe('DELETE /api/v1/heroes/:id', () => {
   test('Responds with status code 400 if id is not valid', async () => {
     const id = 123;
-    await request(app)
+    const response = await request(app)
       .delete(`/api/v1/heroes/${id}`)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
-      .expect(400)
-      .then(response => {
-        expect(response.body.ok).toBe(false);
-        expect(response.body.message).toBe(`ID: "${id}" is not a valid MongoID`);
-      });
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Provided id is not a valid Mongo ID');
   });
   test('Responds with status code 404 hero is not found', async () => {
     const id = '6385cbca684dd769f24c045d';
-    await request(app)
+    const response = await request(app)
       .delete(`/api/v1/heroes/${id}`)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
-      .expect(404)
-      .then(response => {
-        expect(response.body.ok).toBe(false);
-        expect(response.body.message).toBe(`Hero with "${id}" does not exist!`);
-      });
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe(`Hero with \"${id}\" does not exist!`);
   });
   test('Responds with response 200 after hero deleted', async () => {
-    await request(app)
+    const response = await request(app)
       .delete(`/api/v1/heroes/${spidermanId}`)
       .set('Accept', 'application/json')
       .expect('Content-Type', /application\/json/)
-      .expect(200)
-      .then(response => {
-        expect(response.body.ok).toBe(true);
-      });
+      .expect(200);
+    expect(response.body.ok).toBe(true);
   });
 });
 
