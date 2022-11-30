@@ -1,5 +1,4 @@
 import { Response, Request, NextFunction } from 'express';
-import mongoose from 'mongoose';
 
 import Hero from './heroes.model';
 
@@ -9,8 +8,12 @@ export async function heroesList(
   next: NextFunction,
 ) {
   try {
-    const { limit = 10 } = request.query;
-    const heroes = await Hero.find().limit(Number(limit));
+
+    const { limit = 10, orderBy = '_id', sort = 'asc' } = request.query;
+
+    const heroes = await Hero.find()
+      .limit(Number(limit))
+      .sort({ [orderBy as string]: (sort === 'asc') ? 1 : (sort === 'desc') ? -1 : 1 });
 
     return response.status(200).json({ ok: true, heroes });
 

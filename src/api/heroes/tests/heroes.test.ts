@@ -28,7 +28,7 @@ beforeEach(async () => {
   }
 });
 
-describe('GET /api/v1/heroes', () => {
+describe('GET /api/v1/heroes', () => {  
   test('Responds with a empty heroes array', async () => {
     const response = await request(app)
       .get('/api/v1/heroes')
@@ -48,6 +48,33 @@ describe('GET /api/v1/heroes', () => {
       .expect(200);
     expect(response.body.ok).toBe(true);
     expect(response.body.heroes.length).toBe(limit);
+  });
+  test('Sort heroes list by hero name ascending without sort query param', async () => {
+    const response = await request(app)
+      .get('/api/v1/heroes?orderBy=heroName')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /application\/json/)
+      .expect(200);
+    expect(response.body.ok).toBe(true);
+    expect(response.body.heroes[0].heroName).toBe('Batman');
+  });
+  test('Sort heroes list by hero name ascending', async () => {
+    const response = await request(app)
+      .get('/api/v1/heroes?orderBy=heroName&sort=asc')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /application\/json/)
+      .expect(200);
+    expect(response.body.ok).toBe(true);
+    expect(response.body.heroes[0].heroName).toBe('Batman');
+  });
+  test('Sort heroes list by hero name descending', async () => {
+    const response = await request(app)
+      .get('/api/v1/heroes?orderBy=heroName&sort=desc')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /application\/json/)
+      .expect(200);
+    expect(response.body.ok).toBe(true);
+    expect(response.body.heroes[0].heroName).toBe('Wonder Woman');
   });
 });
 
