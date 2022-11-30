@@ -28,7 +28,7 @@ beforeEach(async () => {
   }
 });
 
-describe('GET /api/v1/heroes', () => {  
+describe.only('GET /api/v1/heroes', () => {  
   test('Responds with a empty heroes array', async () => {
     const response = await request(app)
       .get('/api/v1/heroes')
@@ -75,6 +75,15 @@ describe('GET /api/v1/heroes', () => {
       .expect(200);
     expect(response.body.ok).toBe(true);
     expect(response.body.heroes[0].heroName).toBe('Wonder Woman');
+  });
+  test.only('Skip heroes list with quantity number by query param', async () => {
+    const response = await request(app)
+      .get('/api/v1/heroes?skip=2')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /application\/json/)
+      .expect(200);
+    expect(response.body.ok).toBe(true);
+    expect(response.body.heroes[0].heroName).toBe('Captain America');
   });
 });
 
