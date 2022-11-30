@@ -60,15 +60,11 @@ export async function create(
   next: NextFunction,
 ) {
   try {    
-
     const hero = await Hero.create(request.body);
-
     return response.status(201).json({
       ok: true,
       hero,
     });
-
-
   } catch (error) {
     next(error);
   }
@@ -88,9 +84,8 @@ export async function update(
         ok: false,
         message: `ID: "${id}" is not a valid MongoID`,
       });
-    }    
+    }
 
-    // Validation if user did not send any data
     if (Object.keys(body).length === 0) {
       return response.status(400).json({
         ok: false,

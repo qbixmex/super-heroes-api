@@ -1,22 +1,10 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
-import Hero from './heroes.model';
+import Hero from '../heroes.model';
 
-import app from '../../app';
-import { HeroInterface } from '../../interfaces';
+import app from '../../../app';
+import { heroesList } from './heroes.fixtures';
 
-const heroesList: HeroInterface[] = [
-  {
-    heroName: 'Spiderman',
-    realName: 'Peter Parker',
-    studio: 'Marvel',
-  },
-  {
-    heroName: 'Ironman',
-    realName: 'Tony Stark',
-    studio: 'Marvel',
-  },
-];
 
 let spidermanId = '';
 let ironmanId = '';
@@ -94,9 +82,9 @@ describe('GET /api/v1/heroes/:id', () => {
   });
 });
 
-describe.only('POST /api/v1/heroes', () => {
+describe('POST /api/v1/heroes', () => {
   test('Responds with status 400 if hero name is empty', async () => {
-    await request(app)
+    const response = await request(app)
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
       .send({
@@ -104,13 +92,11 @@ describe.only('POST /api/v1/heroes', () => {
         studio: 'Marvel',
       })
       .expect('Content-Type', /application\/json/)
-      .expect(400)
-      .then(response => {
-        expect(response.body.errors[0].msg).toBe('Hero name is required!');
-      });
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Hero name is required!');
   });
   test('Responds with status 400 if hero name is already exist', async () => {
-    await request(app)
+    const response = await request(app)
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
       .send({
@@ -119,28 +105,24 @@ describe.only('POST /api/v1/heroes', () => {
         studio: 'Marvel',
       })
       .expect('Content-Type', /application\/json/)
-      .expect(400)
-      .then(response => {
-        expect(response.body.errors[0].msg)
-          .toBe('Hero name "Spiderman" already exists!');
-      });
+      .expect(400);
+    expect(response.body.errors[0].msg)
+      .toBe('Hero "Spiderman" already exists!');
   });
   test('Responds with status 400 if hero real name is empty', async () => {
-    await request(app)
+    const response = await request(app)
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
       .send({
-        heroName: 'Hulk',        
-        studio: 'Marvel',
+        heroName: 'Flash',
+        studio: 'DC',
       })
       .expect('Content-Type', /application\/json/)
-      .expect(400)
-      .then(response => {
-        expect(response.body.errors[0].msg).toBe('Hero real name is required!');
-      });
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Hero real name is required!');
   });
   test('Responds with status 400 if studio is empty', async () => {
-    await request(app)
+    const response = await request(app)
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
       .send({
@@ -148,25 +130,28 @@ describe.only('POST /api/v1/heroes', () => {
         realName: 'Steve Banner',
       })
       .expect('Content-Type', /application\/json/)
-      .expect(400)
-      .then(response => {
-        expect(response.body.errors[0].msg).toBe('Studio is required!');
-      });
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Studio is required!');
   });
   test('Responds with response 201', async () => {
-    await request(app)
+    const newHero = {
+      heroName: 'Scarlet Witch',
+      realName: 'Wanda Maximoff',
+      studio: 'Marvel',
+    };
+    const response = await request(app)
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
-      .send({
-        heroName: 'Scarlet Witch',
-        realName: 'Wanda',
-        studio: 'Marvel',
-      })
+      .send(newHero)
       .expect('Content-Type', /application\/json/)
-      .expect(201)
-      .then(response => {
-        expect(response.body.hero).toHaveProperty('_id');
-      });
+      .expect(201);
+    expect(response.body.ok).toBe(true);
+    expect(response.body.hero).toEqual({
+      _id: expect.any(String),
+      ...newHero,
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
+    });
   });
 });
 

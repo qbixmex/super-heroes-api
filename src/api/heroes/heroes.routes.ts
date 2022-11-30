@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { check } from 'express-validator';
 import * as HeroesController from './heroes.controller';
 import { fieldValidation } from '../../middlewares/field-validation';
-import Hero from './heroes.model';
+import { isHeroExist } from '../../helpers/db-validators';
 
 const router = Router();
 
@@ -11,14 +11,9 @@ router.get('/:id', HeroesController.heroDetails);
 
 router.post('/', [
   check('heroName', 'Hero name is required!').not().isEmpty(),
-  check('heroName').custom(async (heroName: string = '') => {
-    const heroExist = await Hero.findOne({ heroName: heroName });
-    if (heroExist) {
-      throw new Error(`Hero name "${heroName}" already exists!`);
-    }
-  }),
   check('realName', 'Hero real name is required!').not().isEmpty(),
   check('studio', 'Studio is required!').not().isEmpty(),
+  check('heroName').custom(isHeroExist),
   fieldValidation,
 ], HeroesController.create);
 
