@@ -28,21 +28,14 @@ export async function heroDetails(
 
     const id = request.params.id;
 
-    if (!mongoose.Types.ObjectId.isValid(request.params.id)) {
-      return response.status(400).json({
-        ok: false,
-        message: `ID: "${id}" is not a valid MongoID`,
-      });
-    }
-
     const hero = await Hero.findOne({ _id: id });
 
-    if (!hero) {
-      return response.status(404).json({
-        ok: false,
-        message: `Hero with "${id}" does not exist!`,
-      });
-    }
+    // if (!hero) {
+    //   return response.status(404).json({
+    //     ok: false,
+    //     message: `Hero with "${id}" does not exist!`,
+    //   });
+    // }
 
     return response.status(200).json({
       ok: true,

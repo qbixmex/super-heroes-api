@@ -46,8 +46,7 @@ describe('GET /api/v1/heroes/:id', () => {
       .expect('Content-Type', /json/)
       .expect(400)
       .then(response => {
-        expect(response.body.ok).toBe(false);
-        expect(response.body.message).toBe(`ID: "${id}" is not a valid MongoID`);
+        expect(response.body.errors[0].msg).toBe('Provided id is not a valid Mongo ID');
       });
   });
   test('Responds with status code 404 hero is not found', async () => {
@@ -56,10 +55,9 @@ describe('GET /api/v1/heroes/:id', () => {
       .get(`/api/v1/heroes/${id}`)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
-      .expect(404)
+      .expect(400)
       .then(response => {
-        expect(response.body.ok).toBe(false);
-        expect(response.body.message).toBe(`Hero with "${id}" does not exist!`);
+        expect(response.body.errors[0].msg).toBe(`Hero with "${id}" does not exist!`);
       });
   });
   test('Responds with a single hero object', async () => {
@@ -72,9 +70,7 @@ describe('GET /api/v1/heroes/:id', () => {
         expect(response.body.ok).toBe(true);
         expect(response.body.hero).toEqual({
           _id: spidermanId,
-          heroName: heroesList[0].heroName,
-          realName: heroesList[0].realName,
-          studio: heroesList[0].studio,
+          ...heroesList[0],
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
         });

@@ -7,7 +7,12 @@ import { isHeroExist, isHeroExistById, isEmptyBody } from '../../helpers/db-vali
 const router = Router();
 
 router.get('/', HeroesController.heroesList);
-router.get('/:id', HeroesController.heroDetails);
+
+router.get('/:id', [
+  check('id', 'Provided id is not a valid Mongo ID').isMongoId(),
+  check('id').custom(isHeroExistById),
+  fieldValidation,
+], HeroesController.heroDetails);
 
 router.post('/', [
   body().custom((_, { req }) => isEmptyBody(req)),
