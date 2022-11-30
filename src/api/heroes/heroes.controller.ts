@@ -11,12 +11,19 @@ export async function heroesList(
 
     const { limit = 10, skip = 0, orderBy = '_id', sort = 'asc' } = request.query;
 
-    const heroes = await Hero.find()
-      .limit(Number(limit))
-      .skip(Number(skip))
-      .sort({ [orderBy as string]: (sort === 'asc') ? 1 : (sort === 'desc') ? -1 : 1 });
+    const [total, heroes] = await Promise.all([
+      Hero.countDocuments(),
+      Hero.find()
+        .limit(Number(limit))
+        .skip(Number(skip))
+        .sort({ [orderBy as string]: (sort === 'asc') ? 1 : (sort === 'desc') ? -1 : 1 }),
+    ]);
 
-    return response.status(200).json({ ok: true, heroes });
+    return response.status(200).json({
+      ok: true,
+      heroes,
+      total,
+    });
 
   } catch (error) {
     next(error);
