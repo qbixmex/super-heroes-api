@@ -9,7 +9,10 @@ export function fieldValidation(
   try {
     validationResult(request).throw();
     return next();
-  } catch (errors) {
-    response.status(400).json(errors);
+  } catch (errors: any) {
+    response.status(400).json({
+      ok: false,
+      ...errors,
+    });
   }
 }
