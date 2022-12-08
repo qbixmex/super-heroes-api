@@ -16,7 +16,7 @@ const UserSchema = new Schema<UserInterface>({
   },
   role: {
     type: String,
-    required: [ true, 'Role Name is Required !'],
+    default: 'regular',
   },
   password: {
     type: String,

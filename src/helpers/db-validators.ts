@@ -33,3 +33,13 @@ export async function isUserExistById(id: string) {
   if (!userExist) throw new Error(`User with id: "${id}" does not exist!`);
   return true;
 }
+
+export async function isValidRole(role?: string) {
+  if (role) {
+    const acceptedRoles = ['admin', 'regular'];
+    if (!acceptedRoles.includes(role)) {
+      throw new Error(`Role: "${role}" is invalid!`);
+    }
+  }
+  return true;
+}

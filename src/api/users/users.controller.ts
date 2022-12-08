@@ -43,3 +43,19 @@ export async function userProfile(
     next(error);
   }
 }
+
+export async function createUser(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+) {
+  try {
+    const user = await User.create(request.body);
+    return response.status(201).json({
+      ok: true,
+      user,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
