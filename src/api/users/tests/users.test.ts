@@ -25,7 +25,7 @@ beforeEach(async () => {
   }
 });
 
-describe('GET /api/v1/users', () => {
+describe.only('GET /api/v1/users', () => {
   test('Responds with status 200 with expected users list length', async () => {
     const response = await request(app)
       .get('/api/v1/users')
@@ -35,6 +35,61 @@ describe('GET /api/v1/users', () => {
     expect(response.body.ok).toBe(true);
     expect(response.body.users.length).toBe(usersList.length);
     expect(response.body.total).toBe(usersList.length);
+  });
+  test('Show a limited list with provided query param', async () => {
+    const limit = 1;
+    const response = await request(app)
+      .get(`/api/v1/users?limit=${limit}`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /application\/json/)
+      .expect(200);
+    expect(response.body.ok).toBe(true);
+    expect(response.body.users.length).toBe(limit);
+  });
+  test('Sort users list by email ascending', async () => {
+    const response = await request(app)
+      .get('/api/v1/users?orderBy=email')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /application\/json/)
+      .expect(200);
+    expect(response.body.ok).toBe(true);
+    expect(response.body.users[0].email).toBe('jack-kirby@marvel.com');
+  });
+  test('Sort users list by email descending', async () => {
+    const response = await request(app)
+      .get('/api/v1/users?orderBy=email&sort=desc')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /application\/json/)
+      .expect(200);
+    expect(response.body.ok).toBe(true);
+    expect(response.body.users[0].email).toBe('stanlee@marvel.com');
+  });
+  test('Sort users list by First Name ascending', async () => {
+    const response = await request(app)
+      .get('/api/v1/users?orderBy=firstName')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /application\/json/)
+      .expect(200);
+    expect(response.body.ok).toBe(true);
+    expect(response.body.users[0].firstName).toBe('Jack');
+  });
+  test('Sort users list by First Name descending', async () => {
+    const response = await request(app)
+      .get('/api/v1/users?skip=1')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /application\/json/)
+      .expect(200);
+    expect(response.body.ok).toBe(true);
+    expect(response.body.users[0].email).toBe('jack-kirby@marvel.com');
+  });
+  test('Sort users list by First Name descending', async () => {
+    const response = await request(app)
+      .get('/api/v1/users?orderBy=firstName&sort=desc')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /application\/json/)
+      .expect(200);
+    expect(response.body.ok).toBe(true);
+    expect(response.body.users[0].firstName).toBe('Stan');
   });
 });
 

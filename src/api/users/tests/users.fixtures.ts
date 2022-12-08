@@ -9,10 +9,10 @@ export const usersList: UserInterface[] = [
     password: 'secret-password',
   },
   {
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'jhon-doe@nodomain.com',
-    role: 'regular',
+    firstName: 'Jack',
+    lastName: 'Kirby',
+    email: 'jack-kirby@marvel.com',
+    role: 'admin',
     password: 'secret-password',
   },
 ];
