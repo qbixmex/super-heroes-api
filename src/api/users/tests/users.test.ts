@@ -6,7 +6,7 @@ import app from '../../../app';
 import { usersList } from './users.fixtures';
 
 let stanLeeId = '';
-let johnDoeId = '';
+let jackKirbyId = '';
 
 beforeEach(async () => {
   try {
@@ -19,13 +19,13 @@ beforeEach(async () => {
     const johnDoe = await User.findOne({ email: 'jhon-doe@nodomain.com' });
 
     stanLeeId = String(stanLee?._id);
-    johnDoeId = String(johnDoe?._id);
+    jackKirbyId = String(johnDoe?._id);
   } catch (error) {
     console.log(error);
   }
 });
 
-describe.only('GET /api/v1/users', () => {
+describe('GET /api/v1/users', () => {
   test('Responds with status 200 with expected users list length', async () => {
     const response = await request(app)
       .get('/api/v1/users')
@@ -90,6 +90,47 @@ describe.only('GET /api/v1/users', () => {
       .expect(200);
     expect(response.body.ok).toBe(true);
     expect(response.body.users[0].firstName).toBe('Stan');
+  });
+});
+
+describe('GET /api/v1/users/:id', () => {
+  test('Responds with status code 400 if id is not valid', async () => {
+    const id = 123;
+    const response = await request(app)
+      .get(`/api/v1/users/${id}`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.ok).toBe(false);
+    expect(response.body.errors[0].msg)
+      .toBe('Provided id is not a valid Mongo ID');
+    // console.log(response.body);
+  });  
+  test('Responds with status code 404 user is not found', async () => {
+    const id = '6386c276866dc450ba45a133';
+    const response = await request(app)
+      .get(`/api/v1/users/${id}`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.ok).toBe(false);
+    expect(response.body.errors[0].msg)
+      .toBe(`User with id: "${id}" does not exist!`);
+    // console.log(response.body);
+  });  
+  test('Responds with a single user object', async () => {
+    const response = await request(app)
+      .get(`/api/v1/users/${stanLeeId}`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /application\/json/)
+      .expect(200);
+    expect(response.body.ok).toBe(true);
+    expect(response.body.user).toEqual({
+      _id: stanLeeId,
+      ...usersList[0],
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
+    });
   });
 });
 

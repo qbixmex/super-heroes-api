@@ -25,3 +25,21 @@ export async function usersList(
     next(error);
   }
 }
+
+export async function userProfile(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+) {
+  try {
+    const id = request.params.id;
+    const user = await User.findOne({ _id: id });
+
+    return response.status(200).json({
+      ok: true,
+      user,
+    });
+  } catch (error) {
+    next(error);
+  }
+}

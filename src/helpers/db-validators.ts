@@ -1,5 +1,6 @@
 import { Request } from 'express-validator/src/base';
 import Hero from '../api/heroes/heroes.model';
+import User from '../api/users/users.model';
 
 export async function isHeroExistById(id: string) {
   const heroExist = await Hero.findOne({ _id: id });
@@ -24,5 +25,11 @@ export function isEmptyBody(request: Request) {
   if (Object.keys(request.body).length === 0) {
     throw new Error('Body cannot be empty!');
   }
+  return true;
+}
+
+export async function isUserExistById(id: string) {
+  const userExist = await User.findOne({ _id: id });
+  if (!userExist) throw new Error(`User with id: "${id}" does not exist!`);
   return true;
 }
