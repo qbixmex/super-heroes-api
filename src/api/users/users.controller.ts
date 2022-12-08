@@ -59,3 +59,26 @@ export async function createUser(
     next(error);
   }
 }
+
+export async function updateUser(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+) {
+  try {
+    const id = request.params.id;
+
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: id },
+      request.body,
+      { new: true },
+    );
+
+    return response.status(200).json({
+      ok: true,
+      user: updatedUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+}

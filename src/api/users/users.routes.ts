@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { check, body } from 'express-validator';
-import { isUserExistById, isEmptyBody, isValidRole } from '../../helpers/db-validators';
+import { isUserExistById, isEmptyBody, isValidRole, isEmailExist } from '../../helpers/db-validators';
 import { fieldValidation } from '../../middlewares/field-validations';
 import * as UsersController from './users.controller';
 
@@ -25,5 +25,20 @@ router.post('/', [
     .isLength({ min: 8 }),
   fieldValidation,
 ], UsersController.createUser);
+
+router.patch('/:id', [
+  check('id', 'Provided id is not a valid Mongo ID').isMongoId(),
+  check('id').custom(isUserExistById),
+  body().custom((_, { req }) => isEmptyBody(req)),
+  check('firstName', 'First Name cannot be empty!').notEmpty(),
+  check('lastName', 'Last Name cannot be empty!').notEmpty(),
+  check('email', 'Email cannot be empty!').notEmpty(),
+  check('email', 'Email is not valid!').isEmail(),
+  check('email').custom((email, { req }) => isEmailExist(email, req?.params?.id)),
+  check('role').custom(isValidRole),
+  check('password', 'Password must be at least 8 characters long!')
+    .isLength({ min: 8 }),
+  fieldValidation,
+], UsersController.updateUser);
 
 export default router;

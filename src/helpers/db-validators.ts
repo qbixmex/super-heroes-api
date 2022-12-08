@@ -43,3 +43,17 @@ export async function isValidRole(role?: string) {
   }
   return true;
 }
+
+export async function isEmailExist(email: string, currentUserId?: string) {
+  const user = await User.findOne({ email: email });
+  const errorMessage = `Email: "${email}" already exists!`;
+
+  if (user) {
+    if (currentUserId && currentUserId === String(user?._id)) {
+      return true;
+    } else {
+      throw new Error(errorMessage);
+    }
+  }
+  return true;
+}

@@ -16,10 +16,10 @@ beforeEach(async () => {
       await User.create(usersList[i]);
     }
     const stanLee = await User.findOne({ email: 'stanlee@marvel.com' });
-    const johnDoe = await User.findOne({ email: 'jhon-doe@nodomain.com' });
+    const jackKirby = await User.findOne({ email: 'jack-kirby@marvel.com' });
 
     stanLeeId = String(stanLee?._id);
-    jackKirbyId = String(johnDoe?._id);
+    jackKirbyId = String(jackKirby?._id);
   } catch (error) {
     console.log(error);
   }
@@ -261,6 +261,147 @@ describe('POST /api/v1/users', () => {
     expect(response.body.user).toEqual({
       _id: expect.any(String),
       ...usersList[0],
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
+    });
+  });
+});
+
+describe('PATCH /api/v1/users/:id', () => {
+  test('Responds with status code 400 if id is not valid', async () => {
+    const id = 123;
+    const response = await request(app)
+      .patch(`/api/v1/users/${id}`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Provided id is not a valid Mongo ID');
+  });
+  test('Responds with status code 404 if user is not found', async () => {
+    const id = '6385cbca684dd769f24c045d';
+    await request(app)
+      .patch(`/api/v1/users/${id}`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(400)
+      .then(response => {
+        expect(response.body.errors[0].msg).toBe(`User with id: "${id}" does not exist!`);
+      });
+  });
+  test('Responds with status 400 if body is empty', async () => {
+    const response = await request(app)
+      .patch(`/api/v1/users/${jackKirbyId}`)
+      .set('Accept', 'application/json')
+      .send({})
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.ok).toBe(false);
+    expect(response.body.errors[0].msg).toBe('Body cannot be empty!');
+  });
+  test('Responds with status 400 if first Name is empty', async () => {
+    const response = await request(app)
+      .patch(`/api/v1/users/${jackKirbyId}`)
+      .set('Accept', 'application/json')
+      .send({
+        ...usersList[1],
+        firstName: '',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('First Name cannot be empty!');
+  });
+  test('Responds with status 400 if first Name is empty', async () => {
+    const response = await request(app)
+      .patch(`/api/v1/users/${jackKirbyId}`)
+      .set('Accept', 'application/json')
+      .send({
+        ...usersList[1],
+        lastName: '',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Last Name cannot be empty!');
+  });
+  test('Responds with status 400 if first Name is empty', async () => {
+    const response = await request(app)
+      .patch(`/api/v1/users/${jackKirbyId}`)
+      .set('Accept', 'application/json')
+      .send({
+        ...usersList[1],
+        email: '',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Email cannot be empty!');
+  });
+  test('Responds with status 400 if first Name is empty', async () => {
+    const response = await request(app)
+      .patch(`/api/v1/users/${jackKirbyId}`)
+      .set('Accept', 'application/json')
+      .send({
+        ...usersList[1],
+        email: 'jack-kirby-marvel',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Email is not valid!');
+  });
+  test('Responds with status 400 if email exists!', async () => {
+    const response = await request(app)
+      .patch(`/api/v1/users/${jackKirbyId}`)
+      .set('Accept', 'application/json')
+      .send({
+        ...usersList[1],
+        email: usersList[0].email,
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe(`Email: "${usersList[0].email}" already exists!`);
+  });
+  test('Responds with status 400 if role is not a valid role', async () => {
+    const response = await request(app)
+      .patch(`/api/v1/users/${jackKirbyId}`)
+      .set('Accept', 'application/json')
+      .send({
+        ...usersList[1],
+        role: 'vip',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.ok).toBe(false);
+    expect(response.body.errors[0].msg).toBe('Role: "vip" is invalid!');
+  });
+  test('Responds with status 400 if password is not a valid min length', async () => {
+    const response = await request(app)
+      .patch(`/api/v1/users/${jackKirbyId}`)
+      .set('Accept', 'application/json')
+      .send({
+        ...usersList[1],
+        password: '123',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.ok).toBe(false);
+    expect(response.body.errors[0].msg).toBe('Password must be at least 8 characters long!');
+  });
+  test('Responds with status 200 if user is updated', async () => {
+    const updatedUser = {
+      ...usersList[1],
+      role: 'regular',
+      password: 'another-brick-on-the-wall',
+    };
+
+    const response = await request(app)
+      .patch(`/api/v1/users/${jackKirbyId}`)
+      .set('Accept', 'application/json')
+      .send(updatedUser)
+      .expect('Content-Type', /application\/json/)
+      .expect(200);
+
+    expect(response.body.ok).toBe(true);
+    expect(response.body.user).toEqual({
+      _id: expect.any(String),
+      ...updatedUser,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
