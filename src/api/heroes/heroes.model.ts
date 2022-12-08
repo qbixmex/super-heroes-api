@@ -14,6 +14,16 @@ const HeroSchema = new Schema<HeroInterface>({
     type: String,
     required: [true, 'Studio is Required!'],
   },
+  gender: {
+    type: String,
+    required: [true, 'Gender is Required!'],
+  },
+  image: {
+    type: String,
+    required: [true, 'Gender is Required!'],
+  },
+  nationality: String,
+  powers: String,
 }, {
   timestamps: true,
   versionKey: false,

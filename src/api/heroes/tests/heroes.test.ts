@@ -140,14 +140,16 @@ describe('POST /api/v1/heroes', () => {
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
       .send({
-        heroName: 'Spiderman',
+        heroName: 'Ironman',
         realName: 'Peter Parker',
         studio: 'Marvel',
+        gender: 'Male',
+        image: 'https://domain.com/image.jpg',
       })
       .expect('Content-Type', /application\/json/)
       .expect(400);
     expect(response.body.errors[0].msg)
-      .toBe('Hero "Spiderman" already exists!');
+      .toBe('Hero "Ironman" already exists!');
   });
   test('Responds with status 400 if hero real name is empty', async () => {
     const response = await request(app)
@@ -173,11 +175,81 @@ describe('POST /api/v1/heroes', () => {
       .expect(400);
     expect(response.body.errors[0].msg).toBe('Studio is required!');
   });
+  test('Responds with status 400 if gender is empty', async () => {
+    const response = await request(app)
+      .post('/api/v1/heroes')
+      .set('Accept', 'application/json')
+      .send({
+        heroName: 'Hulk',
+        realName: 'Steve Banner',
+        studio: 'Marvel',
+        image: 'https://domain.com/image.jpg',
+        nationality: 'American',
+        powers: 'Strength, Smash',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Gender is required!');
+  });
+  test('Responds with status 400 if image is empty', async () => {
+    const response = await request(app)
+      .post('/api/v1/heroes')
+      .set('Accept', 'application/json')
+      .send({
+        heroName: 'Hulk',
+        realName: 'Steve Banner',
+        studio: 'Marvel',
+        gender: 'Male',
+        nationality: 'American',
+        powers: 'Strength, Smash',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Image is required!');
+  });
+  test('Responds with status 400 if nationality is not a string', async () => {
+    const response = await request(app)
+      .post('/api/v1/heroes')
+      .set('Accept', 'application/json')
+      .send({
+        heroName: 'Hulk',
+        realName: 'Steve Banner',
+        studio: 'Marvel',
+        gender: 'Male',
+        image: 'https://domain.com/image.jpg',
+        nationality: 123,
+        powers: 'Strength, Smash',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Nationality must be a string!');
+  });
+  test('Responds with status 400 if powers is not a string', async () => {
+    const response = await request(app)
+      .post('/api/v1/heroes')
+      .set('Accept', 'application/json')
+      .send({
+        heroName: 'Hulk',
+        realName: 'Steve Banner',
+        studio: 'Marvel',
+        gender: 'Male',
+        image: 'https://domain.com/image.jpg',
+        nationality: 'American',
+        powers: false,
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Powers must be a string!');
+  });
   test('Responds with response 201', async () => {
     const newHero = {
       heroName: 'Scarlet Witch',
       realName: 'Wanda Maximoff',
       studio: 'Marvel',
+      gender: 'Female',
+      image: 'https://domain.com/image.jpg',
+      nationality: 'Sokovia',
+      powers: 'Telekinesis, Energy manipulation, Neuroelectric Interfacing',
     };
     const response = await request(app)
       .post('/api/v1/heroes')
@@ -220,6 +292,19 @@ describe('PATCH /api/v1/heroes/:id', () => {
         expect(response.body.errors[0].msg).toBe(`Hero with "${id}" does not exist!`);
       });
   });
+  test('Responds with status 400 if hero name is already exist', async () => {
+    const response = await request(app)
+      .patch(`/api/v1/heroes/${ironmanId}`)
+      .set('Accept', 'application/json')
+      .send({
+        ...heroesList[1],
+        heroName: 'Spiderman',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.errors[0].msg)
+      .toBe('Hero "Spiderman" already exists!');
+  });
   test('Responds with status 400 if user send empty body', async () => {
     const response = await request(app)
       .patch('/api/v1/heroes/' + ironmanId)
@@ -229,22 +314,79 @@ describe('PATCH /api/v1/heroes/:id', () => {
       .expect(400);
     expect(response.body.errors[0].msg).toBe('Body cannot be empty!');
   });
+  test('Responds with status 400 if gender is empty', async () => {
+    const response = await request(app)
+      .patch(`/api/v1/heroes/${ironmanId}`)
+      .set('Accept', 'application/json')
+      .send({
+        ...heroesList[1],
+        gender: '',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Gender cannot be empty!');
+  });
+  test('Responds with status 400 if image is empty', async () => {
+    const response = await request(app)
+      .patch(`/api/v1/heroes/${ironmanId}`)
+      .set('Accept', 'application/json')
+      .send({
+        ...heroesList[1],
+        image: '',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Image cannot be empty!');
+  });
+  test('Responds with status 400 if nationality is not a string', async () => {
+    const response = await request(app)
+      .patch(`/api/v1/heroes/${ironmanId}`)
+      .set('Accept', 'application/json')
+      .send({
+        heroName: 'Hulk',
+        realName: 'Steve Banner',
+        studio: 'Marvel',
+        gender: 'Male',
+        image: 'https://domain.com/image.jpg',
+        nationality: 123,
+        powers: 'Strength, Smash',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Nationality must be a string!');
+  });
+  test('Responds with status 400 if powers is not a string', async () => {
+    const response = await request(app)
+      .patch(`/api/v1/heroes/${ironmanId}`)
+      .set('Accept', 'application/json')
+      .send({
+        heroName: 'Hulk',
+        realName: 'Steve Banner',
+        studio: 'Marvel',
+        gender: 'Male',
+        image: 'https://domain.com/image.jpg',
+        nationality: 'American',
+        powers: false,
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Powers must be a string!');
+  });
   test('Responds with response 200', async () => {
     const response = await request(app)
       .patch(`/api/v1/heroes/${ironmanId}`)
       .set('Accept', 'application/json')
       .send({
-        heroName: 'Ironman Updated',
-        realName: 'Tony Stark Updated',
+        ...heroesList[1],
+        image: 'https://domain.com/updated-image.jpg',
       })
       .expect('Content-Type', /application\/json/)
       .expect(200);
     expect(response.body.ok).toBe(true);
     expect(response.body.hero).toEqual({
       _id: ironmanId,
-      heroName: 'Ironman Updated',
-      realName: 'Tony Stark Updated',
-      studio: heroesList[0].studio,
+      ...heroesList[1],
+      image: 'https://domain.com/updated-image.jpg',
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });

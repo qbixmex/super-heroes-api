@@ -7,9 +7,16 @@ export async function isHeroExistById(id: string) {
   return true;
 }
 
-export async function isHeroExist(fieldName: string) {
+export async function isHeroExist(fieldName: string, currentHeroId?: string) {
   const heroExist = await Hero.findOne({ heroName: fieldName });
-  if (heroExist) throw new Error(`Hero "${fieldName}" already exists!`);
+  const errorMessage = `Hero "${fieldName}" already exists!`;  
+  if (heroExist) {
+    if (currentHeroId && currentHeroId === String(heroExist?._id)) {
+      return true;
+    } else {
+      throw new Error(errorMessage);
+    }
+  }
   return true;
 }
 
