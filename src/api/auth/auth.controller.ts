@@ -21,7 +21,7 @@ export async function login(
     }
 
     // Check Matched Passwords
-    const validPassword = bcrypt.compareSync(password, user.password);
+    const validPassword = bcrypt.compareSync(password, user.password!);
 
     if (!validPassword) {
       return response.status(400).json({

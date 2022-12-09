@@ -18,7 +18,7 @@ beforeEach(async () => {
     await User.deleteMany({});
 
     for (let i = 0; i < usersList.length; i++) {
-      const encryptedPassword = encryptPassword(usersList[i].password);
+      const encryptedPassword = encryptPassword(usersList[i].password!);
       await User.create({ ...usersList[i], password: encryptedPassword });
     }    
 
@@ -28,7 +28,7 @@ beforeEach(async () => {
     fullName = `${stanLee?.firstName} ${stanLee?.lastName}`;
 
     //* Generate JWT
-    token = await generateToken(String(stanLee?._id), fullName, 1);
+    token = await generateToken(String(stanLee?._id), fullName, 5);
 
     stanLeeId = String(stanLee?._id);
     jackKirbyId = String(jackKirby?._id);
@@ -137,24 +137,25 @@ describe('GET /api/v1/users/:id', () => {
     expect(response.body.errors[0].msg)
       .toBe(`User with id: "${id}" does not exist!`);
   });  
-  test('Responds with a single user object', async () => {
+  test('Responds with a single user', async () => {
     const response = await request(app)
       .get(`/api/v1/users/${stanLeeId}`)
       .set('Accept', 'application/json')
       .set('x-token', token)
       .expect('Content-Type', /application\/json/)
-      .expect(200);
-    expect(response.body.ok).toBe(true);
-    expect(response.body.user).toEqual({
-      _id: stanLeeId,
-      firstName: usersList[0].firstName,
-      lastName: usersList[0].lastName,
-      email: usersList[0].email,
-      image: usersList[0].image,
-      role: usersList[0].role,
-      password: expect.any(String),
-      createdAt: expect.any(String),
-      updatedAt: expect.any(String),
+      .expect(200);    
+    expect(response.body).toEqual({
+      ok: true,
+      user: {
+        _id: stanLeeId,
+        firstName: usersList[0].firstName,
+        lastName: usersList[0].lastName,
+        email: usersList[0].email,
+        image: usersList[0].image,
+        role: usersList[0].role,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      },
     });
   });
 });
@@ -344,7 +345,6 @@ describe('POST /api/v1/users', () => {
         lastName: newUser.lastName,
         email: newUser.email,
         image: newUser.image,
-        password: expect.any(String),
         role: newUser.role,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
@@ -512,7 +512,11 @@ describe('PATCH /api/v1/users/:id', () => {
     expect(response.body.ok).toBe(true);
     expect(response.body.user).toEqual({
       _id: expect.any(String),
-      ...updatedUser,
+      firstName: updatedUser.firstName,
+      lastName: updatedUser.lastName,
+      email: updatedUser.email,
+      image: updatedUser.image,
+      role: updatedUser.role,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });

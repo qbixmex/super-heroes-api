@@ -2,6 +2,7 @@ import { Response, Request, NextFunction } from 'express';
 import User from './users.model';
 import { encryptPassword } from '../../helpers/encryptPassword';
 import { generateToken } from '../../helpers/jwt';
+import { UserInterface } from '../../interfaces/user.interface';
 
 export async function usersList(
   request: Request,
@@ -15,7 +16,8 @@ export async function usersList(
       User.find()
         .limit(Number(limit))
         .skip(Number(skip))
-        .sort({ [orderBy as string]: (sort === 'asc') ? 1 : (sort === 'desc') ? -1 : 1 }),
+        .sort({ [orderBy as string]: (sort === 'asc') ? 1 : (sort === 'desc') ? -1 : 1 })
+        .select('-password'),
     ]);
 
     return response.status(200).json({
@@ -35,7 +37,7 @@ export async function userProfile(
 ) {
   try {
     const id = request.params.id;
-    const user = await User.findOne({ _id: id });
+    const user = await User.findOne({ _id: id }).select('-password');
 
     return response.status(200).json({
       ok: true,
@@ -64,9 +66,20 @@ export async function createUser(
     //* Generate JWT
     const token = await generateToken(String(user._id), fullName);
 
+    delete user.password;
+
     return response.status(201).json({
       ok: true,
-      user,
+      user: {
+        _id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        image: user.image,
+        role: user.role,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
       token,
     });
   } catch (error) {
@@ -81,12 +94,25 @@ export async function updateUser(
 ) {
   try {
     const id = request.params.id;
+    const { firstName, lastName, email, image, role, password } = request.body;
+
+    const userForUpdate: UserInterface = {
+      firstName,
+      lastName,
+      email,
+      image,
+      role,
+    };
+
+    if (password) {
+      userForUpdate.password = encryptPassword(password, 10);
+    }
 
     const updatedUser = await User.findOneAndUpdate(
       { _id: id },
-      request.body,
+      userForUpdate,
       { new: true },
-    );
+    ).select('-password');
 
     return response.status(200).json({
       ok: true,

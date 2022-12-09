@@ -57,3 +57,10 @@ export async function isEmailExist(email: string, currentUserId?: string) {
   }
   return true;
 }
+
+export async function isPasswordSet(password: string, length = 8) {
+  if (password && password.length < length) {
+    throw new Error(`Password must be at least ${length} characters long!`);
+  }
+  return true;
+}

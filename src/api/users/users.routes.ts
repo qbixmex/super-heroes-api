@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { check, body } from 'express-validator';
-import { isUserExistById, isEmptyBody, isValidRole, isEmailExist } from '../../helpers/db-validators';
+import { isUserExistById, isEmptyBody, isValidRole, isEmailExist, isPasswordSet } from '../../helpers/db-validators';
 import { fieldValidation } from '../../middlewares/field-validations';
 import { validateJWT } from '../../middlewares/validate-jwt';
 import * as UsersController from './users.controller';
@@ -43,8 +43,7 @@ router.patch('/:id', [
   check('email').custom((email, { req }) => isEmailExist(email, req?.params?.id)),
   check('image', 'Image is required!').notEmpty(),
   check('role').custom(isValidRole),
-  check('password', 'Password must be at least 8 characters long!')
-    .isLength({ min: 8 }),
+  check('password').custom((password) => isPasswordSet(password)),
   fieldValidation,
 ], UsersController.updateUser);
 
