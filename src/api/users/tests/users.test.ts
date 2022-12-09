@@ -5,9 +5,12 @@ import User from '../users.model';
 import app from '../../../app';
 import { usersList } from './users.fixtures';
 import { encryptPassword } from '../../../helpers/encryptPassword';
+import { generateToken } from '../../../helpers/jwt';
 
-let stanLeeId = '';
-let jackKirbyId = '';
+let fullName: string;
+let token: string;
+let stanLeeId: string;
+let jackKirbyId: string;
 
 beforeEach(async () => {
   try {
@@ -17,10 +20,15 @@ beforeEach(async () => {
     for (let i = 0; i < usersList.length; i++) {
       const encryptedPassword = encryptPassword(usersList[i].password);
       await User.create({ ...usersList[i], password: encryptedPassword });
-    }
+    }    
 
     const stanLee = await User.findOne({ email: 'stanlee@marvel.com' });
     const jackKirby = await User.findOne({ email: 'jack-kirby@marvel.com' });
+
+    fullName = `${stanLee?.firstName} ${stanLee?.lastName}`;
+
+    //* Generate JWT
+    token = await generateToken(String(stanLee?._id), fullName, 1);
 
     stanLeeId = String(stanLee?._id);
     jackKirbyId = String(jackKirby?._id);
@@ -34,6 +42,7 @@ describe('GET /api/v1/users', () => {
     const response = await request(app)
       .get('/api/v1/users')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(200);
     expect(response.body.ok).toBe(true);
@@ -45,6 +54,7 @@ describe('GET /api/v1/users', () => {
     const response = await request(app)
       .get(`/api/v1/users?limit=${limit}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(200);
     expect(response.body.ok).toBe(true);
@@ -54,6 +64,7 @@ describe('GET /api/v1/users', () => {
     const response = await request(app)
       .get('/api/v1/users?orderBy=email')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(200);
     expect(response.body.ok).toBe(true);
@@ -63,6 +74,7 @@ describe('GET /api/v1/users', () => {
     const response = await request(app)
       .get('/api/v1/users?orderBy=email&sort=desc')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(200);
     expect(response.body.ok).toBe(true);
@@ -72,6 +84,7 @@ describe('GET /api/v1/users', () => {
     const response = await request(app)
       .get('/api/v1/users?orderBy=firstName')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(200);
     expect(response.body.ok).toBe(true);
@@ -81,6 +94,7 @@ describe('GET /api/v1/users', () => {
     const response = await request(app)
       .get('/api/v1/users?skip=1')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(200);
     expect(response.body.ok).toBe(true);
@@ -90,6 +104,7 @@ describe('GET /api/v1/users', () => {
     const response = await request(app)
       .get('/api/v1/users?orderBy=firstName&sort=desc')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(200);
     expect(response.body.ok).toBe(true);
@@ -103,6 +118,7 @@ describe('GET /api/v1/users/:id', () => {
     const response = await request(app)
       .get(`/api/v1/users/${id}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(400);
     expect(response.body.ok).toBe(false);
@@ -114,6 +130,7 @@ describe('GET /api/v1/users/:id', () => {
     const response = await request(app)
       .get(`/api/v1/users/${id}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(400);
     expect(response.body.ok).toBe(false);
@@ -124,6 +141,7 @@ describe('GET /api/v1/users/:id', () => {
     const response = await request(app)
       .get(`/api/v1/users/${stanLeeId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(200);
     expect(response.body.ok).toBe(true);
@@ -146,6 +164,7 @@ describe('POST /api/v1/users', () => {
     const response = await request(app)
       .post('/api/v1/users')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({})
       .expect('Content-Type', /application\/json/)
       .expect(400);
@@ -156,6 +175,7 @@ describe('POST /api/v1/users', () => {
     const response = await request(app)
       .post('/api/v1/users')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         lastName: 'Jackson',
         email: 'michael-jackson@moonwalker.com',
@@ -171,6 +191,7 @@ describe('POST /api/v1/users', () => {
     const response = await request(app)
       .post('/api/v1/users')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         firstName: 'Michael',
         email: 'michael-jackson@moonwalker.com',
@@ -186,6 +207,7 @@ describe('POST /api/v1/users', () => {
     const response = await request(app)
       .post('/api/v1/users')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         firstName: 'Michael',
         lastName: 'Jackson',
@@ -201,6 +223,7 @@ describe('POST /api/v1/users', () => {
     const response = await request(app)
       .post('/api/v1/users')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         firstName: 'Michael',
         lastName: 'Jackson',
@@ -217,6 +240,7 @@ describe('POST /api/v1/users', () => {
     const response = await request(app)
       .post('/api/v1/users')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         firstName: 'Michael',
         lastName: 'Jackson',
@@ -232,6 +256,7 @@ describe('POST /api/v1/users', () => {
     const response = await request(app)
       .post('/api/v1/users')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         firstName: 'Michael',
         lastName: 'Jackson',
@@ -247,6 +272,7 @@ describe('POST /api/v1/users', () => {
     const response = await request(app)
       .post('/api/v1/users')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         firstName: 'Michael',
         lastName: 'Jackson',
@@ -264,6 +290,7 @@ describe('POST /api/v1/users', () => {
     const response = await request(app)
       .post('/api/v1/users')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         firstName: 'Michael',
         lastName: 'Jackson',
@@ -279,6 +306,7 @@ describe('POST /api/v1/users', () => {
     const response = await request(app)
       .post('/api/v1/users')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         firstName: 'Michael',
         lastName: 'Jackson',
@@ -304,6 +332,7 @@ describe('POST /api/v1/users', () => {
     const response = await request(app)
       .post('/api/v1/users')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send(newUser)
       .expect('Content-Type', /application\/json/)
       .expect(201);
@@ -331,6 +360,7 @@ describe('PATCH /api/v1/users/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/users/${id}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /json/)
       .expect(400);
     expect(response.body.errors[0].msg).toBe('Provided id is not a valid Mongo ID');
@@ -340,6 +370,7 @@ describe('PATCH /api/v1/users/:id', () => {
     await request(app)
       .patch(`/api/v1/users/${id}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /json/)
       .expect(400)
       .then(response => {
@@ -350,6 +381,7 @@ describe('PATCH /api/v1/users/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/users/${jackKirbyId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({})
       .expect('Content-Type', /application\/json/)
       .expect(400);
@@ -360,6 +392,7 @@ describe('PATCH /api/v1/users/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/users/${jackKirbyId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         ...usersList[1],
         firstName: '',
@@ -372,6 +405,7 @@ describe('PATCH /api/v1/users/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/users/${jackKirbyId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         ...usersList[1],
         lastName: '',
@@ -384,6 +418,7 @@ describe('PATCH /api/v1/users/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/users/${jackKirbyId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         ...usersList[1],
         email: '',
@@ -396,6 +431,7 @@ describe('PATCH /api/v1/users/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/users/${jackKirbyId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         ...usersList[1],
         email: 'jack-kirby-marvel',
@@ -408,6 +444,7 @@ describe('PATCH /api/v1/users/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/users/${jackKirbyId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         ...usersList[1],
         email: usersList[0].email,
@@ -420,6 +457,7 @@ describe('PATCH /api/v1/users/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/users/${jackKirbyId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         ...usersList[1],
         image: '',
@@ -432,6 +470,7 @@ describe('PATCH /api/v1/users/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/users/${jackKirbyId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         ...usersList[1],
         role: 'vip',
@@ -445,6 +484,7 @@ describe('PATCH /api/v1/users/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/users/${jackKirbyId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         ...usersList[1],
         password: '123',
@@ -464,6 +504,7 @@ describe('PATCH /api/v1/users/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/users/${jackKirbyId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send(updatedUser)
       .expect('Content-Type', /application\/json/)
       .expect(200);
@@ -484,6 +525,7 @@ describe('DELETE /api/v1/users/:id', () => {
     const response = await request(app)
       .delete(`/api/v1/users/${id}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /json/)
       .expect(400);
     expect(response.body.errors[0].msg).toBe('Provided id is not a valid Mongo ID');
@@ -493,6 +535,7 @@ describe('DELETE /api/v1/users/:id', () => {
     const response = await request(app)
       .delete(`/api/v1/users/${id}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /json/)
       .expect(400);
     expect(response.body.errors[0].msg).toBe(`User with id: "${id}" does not exist!`);
@@ -501,6 +544,7 @@ describe('DELETE /api/v1/users/:id', () => {
     const response = await request(app)
       .delete(`/api/v1/users/${jackKirbyId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(200);
     expect(response.body.ok).toBe(true);

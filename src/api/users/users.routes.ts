@@ -2,9 +2,13 @@ import { Router } from 'express';
 import { check, body } from 'express-validator';
 import { isUserExistById, isEmptyBody, isValidRole, isEmailExist } from '../../helpers/db-validators';
 import { fieldValidation } from '../../middlewares/field-validations';
+import { validateJWT } from '../../middlewares/validate-jwt';
 import * as UsersController from './users.controller';
 
 const router = Router();
+
+// JWT Validate
+router.use(validateJWT);
 
 router.get('/', UsersController.usersList);
 router.get('/:id', [
