@@ -129,7 +129,12 @@ describe('GET /api/v1/users/:id', () => {
     expect(response.body.ok).toBe(true);
     expect(response.body.user).toEqual({
       _id: stanLeeId,
-      ...usersList[0],
+      firstName: usersList[0].firstName,
+      lastName: usersList[0].lastName,
+      email: usersList[0].email,
+      image: usersList[0].image,
+      role: usersList[0].role,
+      password: expect.any(String),
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
@@ -302,17 +307,20 @@ describe('POST /api/v1/users', () => {
       .send(newUser)
       .expect('Content-Type', /application\/json/)
       .expect(201);
-    expect(response.body.ok).toBe(true);
-    expect(response.body.user).toEqual({
-      _id: expect.any(String),
-      firstName: newUser.firstName,
-      lastName: newUser.lastName,
-      email: newUser.email,
-      image: newUser.image,
-      password: expect.any(String),
-      role: newUser.role,
-      createdAt: expect.any(String),
-      updatedAt: expect.any(String),
+    expect(response.body).toEqual({
+      ok: true,
+      user: {
+        _id: expect.any(String),
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        email: newUser.email,
+        image: newUser.image,
+        password: expect.any(String),
+        role: newUser.role,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      },
+      token: expect.any(String),
     });
   });
 });
