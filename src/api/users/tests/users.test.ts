@@ -204,6 +204,21 @@ describe('POST /api/v1/users', () => {
     expect(response.body.ok).toBe(false);
     expect(response.body.errors[0].msg).toBe('Email is not valid!');
   });
+  test('Responds with status 400 if email exists!', async () => {
+    const response = await request(app)
+      .post('/api/v1/users')
+      .set('Accept', 'application/json')
+      .send({
+        firstName: 'Michael',
+        lastName: 'Jackson',
+        email: usersList[0].email,
+        role: 'regular',
+        password: 'secret-password',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe(`Email: "${usersList[0].email}" already exists!`);
+  });
   test('Responds with status 400 if role is not a valid role', async () => {
     const response = await request(app)
       .post('/api/v1/users')
@@ -251,16 +266,23 @@ describe('POST /api/v1/users', () => {
     expect(response.body.errors[0].msg).toBe('Password must be at least 8 characters long!');
   });
   test('Responds with status 201 if user is created', async () => {
+    const newUser = {
+      firstName: 'Michael',
+      lastName: 'Jackson',
+      email: 'michael-jackson@moonwalker.com',
+      role: 'admin',
+      password: 'moonwalker-yujuuuu',
+    };
     const response = await request(app)
       .post('/api/v1/users')
       .set('Accept', 'application/json')
-      .send({ ...usersList[0] })
+      .send(newUser)
       .expect('Content-Type', /application\/json/)
       .expect(201);
     expect(response.body.ok).toBe(true);
     expect(response.body.user).toEqual({
       _id: expect.any(String),
-      ...usersList[0],
+      ...newUser,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });

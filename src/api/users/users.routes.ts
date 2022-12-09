@@ -19,6 +19,7 @@ router.post('/', [
   check('lastName', 'Last Name is required!').notEmpty(),
   check('email', 'Email is required!').notEmpty(),
   check('email', 'Email is not valid!').isEmail(),
+  check('email').custom((email) => isEmailExist(email)),
   check('role').custom((role) => isValidRole(role)),
   check('password', 'Password is required!').notEmpty(),
   check('password', 'Password must be at least 8 characters long!')
