@@ -430,6 +430,36 @@ describe('PATCH /api/v1/users/:id', () => {
   });
 });
 
+describe('DELETE /api/v1/users/:id', () => {
+  test('Responds with status code 400 if id is not valid', async () => {
+    const id = 123;
+    const response = await request(app)
+      .delete(`/api/v1/users/${id}`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Provided id is not a valid Mongo ID');
+  });
+  test('Responds with status code 404 hero is not found', async () => {
+    const id = '6385cbca684dd769f24c045d';
+    const response = await request(app)
+      .delete(`/api/v1/users/${id}`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe(`User with id: "${id}" does not exist!`);
+  });
+  test('Responds with status code 200 after user deleted', async () => {
+    const response = await request(app)
+      .delete(`/api/v1/users/${jackKirbyId}`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /application\/json/)
+      .expect(200);
+    console.log(response.body);
+    expect(response.body.ok).toBe(true);
+  });
+});
+
 afterEach(async () => {
   await mongoose.connection.close();
 });

@@ -82,3 +82,19 @@ export async function updateUser(
     next(error);
   }
 }
+
+export async function deleteUser(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+) {
+  try {
+    const id = request.params.id;
+
+    await User.findOneAndDelete({ _id: id });
+
+    return response.status(200).json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+}

@@ -42,4 +42,10 @@ router.patch('/:id', [
   fieldValidation,
 ], UsersController.updateUser);
 
+router.delete('/:id', [
+  check('id', 'Provided id is not a valid Mongo ID').isMongoId(),
+  check('id').custom((id) => isUserExistById(id)),
+  fieldValidation,
+], UsersController.deleteUser);
+
 export default router;
