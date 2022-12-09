@@ -20,6 +20,7 @@ router.post('/', [
   check('email', 'Email is required!').notEmpty(),
   check('email', 'Email is not valid!').isEmail(),
   check('email').custom((email) => isEmailExist(email)),
+  check('image', 'Image is required!').notEmpty(),
   check('role').custom((role) => isValidRole(role)),
   check('password', 'Password is required!').notEmpty(),
   check('password', 'Password must be at least 8 characters long!')
@@ -36,6 +37,7 @@ router.patch('/:id', [
   check('email', 'Email cannot be empty!').notEmpty(),
   check('email', 'Email is not valid!').isEmail(),
   check('email').custom((email, { req }) => isEmailExist(email, req?.params?.id)),
+  check('image', 'Image is required!').notEmpty(),
   check('role').custom(isValidRole),
   check('password', 'Password must be at least 8 characters long!')
     .isLength({ min: 8 }),

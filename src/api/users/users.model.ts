@@ -14,6 +14,10 @@ const UserSchema = new Schema<UserInterface>({
     type: String,
     required: [ true, 'Email is Required !'],
   },
+  image: {
+    type: String,
+    required: [ true, 'Image is Required !'],
+  },
   role: {
     type: String,
     default: 'regular',

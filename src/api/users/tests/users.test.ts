@@ -219,6 +219,21 @@ describe('POST /api/v1/users', () => {
       .expect(400);
     expect(response.body.errors[0].msg).toBe(`Email: "${usersList[0].email}" already exists!`);
   });
+  test('Responds with status 400 if image url is empty!', async () => {
+    const response = await request(app)
+      .post('/api/v1/users')
+      .set('Accept', 'application/json')
+      .send({
+        firstName: 'Michael',
+        lastName: 'Jackson',
+        email: 'michael-jackson@moonwalker.com',
+        role: 'regular',
+        password: 'secret-password',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Image is required!');
+  });
   test('Responds with status 400 if role is not a valid role', async () => {
     const response = await request(app)
       .post('/api/v1/users')
@@ -227,6 +242,7 @@ describe('POST /api/v1/users', () => {
         firstName: 'Michael',
         lastName: 'Jackson',
         email: 'michael-jackson@moonwalker.com',
+        image: 'michael-jackson.jpg',
         role: 'vip',
         password: 'secret-password',
       })
@@ -243,6 +259,7 @@ describe('POST /api/v1/users', () => {
         firstName: 'Michael',
         lastName: 'Jackson',
         email: 'michael-jackson@moonwalker.com',
+        image: 'michael-jackson.jpg',
       })
       .expect('Content-Type', /application\/json/)
       .expect(400);
@@ -257,6 +274,7 @@ describe('POST /api/v1/users', () => {
         firstName: 'Michael',
         lastName: 'Jackson',
         email: 'michael-jackson@moonwalker.com',
+        image: 'michael-jackson.jpg',
         role: 'admin',
         password: '123',
       })
@@ -270,6 +288,7 @@ describe('POST /api/v1/users', () => {
       firstName: 'Michael',
       lastName: 'Jackson',
       email: 'michael-jackson@moonwalker.com',
+      image: 'michael-jackson.jpg',
       role: 'admin',
       password: 'moonwalker-yujuuuu',
     };
@@ -380,6 +399,18 @@ describe('PATCH /api/v1/users/:id', () => {
       .expect(400);
     expect(response.body.errors[0].msg).toBe(`Email: "${usersList[0].email}" already exists!`);
   });
+  test('Responds with status 400 if image url is empty!', async () => {
+    const response = await request(app)
+      .patch(`/api/v1/users/${jackKirbyId}`)
+      .set('Accept', 'application/json')
+      .send({
+        ...usersList[1],
+        image: '',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Image is required!');
+  });
   test('Responds with status 400 if role is not a valid role', async () => {
     const response = await request(app)
       .patch(`/api/v1/users/${jackKirbyId}`)
@@ -455,7 +486,6 @@ describe('DELETE /api/v1/users/:id', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /application\/json/)
       .expect(200);
-    console.log(response.body);
     expect(response.body.ok).toBe(true);
   });
 });
