@@ -1,21 +1,40 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
+import User from '../../users/users.model';
 import Hero from '../heroes.model';
 
 import app from '../../../app';
 import { heroesList } from './heroes.fixtures';
+import { generateToken } from '../../../helpers/jwt';
+import { encryptPassword } from '../../../helpers/encryptPassword';
+import { usersList } from '../../users/tests/users.fixtures';
 
-let spidermanId = '';
-let ironmanId = '';
+let fullName: string;
+let token: string;
+let spidermanId: string;
+let ironmanId: string;
 
 beforeEach(async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI_TEST!);
+    await User.deleteMany({});
     await Hero.deleteMany({});
 
+    //* Generate JWT
+    const encryptedPassword = encryptPassword(usersList[0].password);
+    await User.create({ ...usersList[0], password: encryptedPassword });
+
+    const user = await User.findOne({ email: 'stanlee@marvel.com' });
+
+    fullName = `${user?.firstName} ${user?.lastName}`;
+
+    //* Generate JWT
+    token = await generateToken(String(user?._id), fullName, 1);
+
+    //* Create Heroes
     for (let i = 0; i < heroesList.length; i++) {
       await Hero.create(heroesList[i]);
-    }
+    }    
 
     const spiderman = await Hero.findOne({ heroName: 'Spiderman' }).select('_id');
     const ironman = await Hero.findOne({ heroName: 'Ironman' }).select('_id');
@@ -33,6 +52,7 @@ describe('GET /api/v1/heroes', () => {
     const response = await request(app)
       .get('/api/v1/heroes')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(200);
     expect(response.body.ok).toBe(true);
@@ -44,6 +64,7 @@ describe('GET /api/v1/heroes', () => {
     const response = await request(app)
       .get(`/api/v1/heroes?limit=${limit}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(200);
     expect(response.body.ok).toBe(true);
@@ -53,6 +74,7 @@ describe('GET /api/v1/heroes', () => {
     const response = await request(app)
       .get('/api/v1/heroes?orderBy=heroName')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(200);
     expect(response.body.ok).toBe(true);
@@ -62,6 +84,7 @@ describe('GET /api/v1/heroes', () => {
     const response = await request(app)
       .get('/api/v1/heroes?orderBy=heroName&sort=asc')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(200);
     expect(response.body.ok).toBe(true);
@@ -71,6 +94,7 @@ describe('GET /api/v1/heroes', () => {
     const response = await request(app)
       .get('/api/v1/heroes?orderBy=heroName&sort=desc')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(200);
     expect(response.body.ok).toBe(true);
@@ -80,6 +104,7 @@ describe('GET /api/v1/heroes', () => {
     const response = await request(app)
       .get('/api/v1/heroes?skip=2')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(200);
     expect(response.body.ok).toBe(true);
@@ -93,6 +118,7 @@ describe('GET /api/v1/heroes/:id', () => {
     const response = await request(app)
       .get(`/api/v1/heroes/${id}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /json/)
       .expect(400);
     expect(response.body.errors[0].msg).toBe('Provided id is not a valid Mongo ID');
@@ -102,6 +128,7 @@ describe('GET /api/v1/heroes/:id', () => {
     const response = await request(app)
       .get(`/api/v1/heroes/${id}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /json/)
       .expect(400);
     expect(response.body.errors[0].msg).toBe(`Hero with "${id}" does not exist!`);
@@ -110,6 +137,7 @@ describe('GET /api/v1/heroes/:id', () => {
     const response = await request(app)
       .get(`/api/v1/heroes/${spidermanId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /json/)
       .expect(200);
     expect(response.body.ok).toBe(true);
@@ -127,6 +155,7 @@ describe('POST /api/v1/heroes', () => {
     const response = await request(app)
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         realName: 'Peter Parker',
         studio: 'Marvel',
@@ -139,6 +168,7 @@ describe('POST /api/v1/heroes', () => {
     const response = await request(app)
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         heroName: 'Ironman',
         realName: 'Peter Parker',
@@ -155,6 +185,7 @@ describe('POST /api/v1/heroes', () => {
     const response = await request(app)
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         heroName: 'Flash',
         studio: 'DC',
@@ -167,6 +198,7 @@ describe('POST /api/v1/heroes', () => {
     const response = await request(app)
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         heroName: 'Hulk',
         realName: 'Steve Banner',
@@ -179,6 +211,7 @@ describe('POST /api/v1/heroes', () => {
     const response = await request(app)
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         heroName: 'Hulk',
         realName: 'Steve Banner',
@@ -195,6 +228,7 @@ describe('POST /api/v1/heroes', () => {
     const response = await request(app)
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         heroName: 'Hulk',
         realName: 'Steve Banner',
@@ -211,6 +245,7 @@ describe('POST /api/v1/heroes', () => {
     const response = await request(app)
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         heroName: 'Hulk',
         realName: 'Steve Banner',
@@ -228,6 +263,7 @@ describe('POST /api/v1/heroes', () => {
     const response = await request(app)
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         heroName: 'Hulk',
         realName: 'Steve Banner',
@@ -254,6 +290,7 @@ describe('POST /api/v1/heroes', () => {
     const response = await request(app)
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send(newHero)
       .expect('Content-Type', /application\/json/)
       .expect(201);
@@ -273,6 +310,7 @@ describe('PATCH /api/v1/heroes/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/heroes/${id}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /json/)
       .expect(400);
     expect(response.body.errors[0].msg).toBe('Provided id is not a valid Mongo ID');
@@ -282,6 +320,7 @@ describe('PATCH /api/v1/heroes/:id', () => {
     await request(app)
       .patch(`/api/v1/heroes/${id}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         heroName: 'Ironman Updated',
         realName: 'Tony Stark Updated',
@@ -296,6 +335,7 @@ describe('PATCH /api/v1/heroes/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/heroes/${ironmanId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         ...heroesList[1],
         heroName: 'Spiderman',
@@ -308,8 +348,9 @@ describe('PATCH /api/v1/heroes/:id', () => {
   test('Responds with status 400 if user send empty body', async () => {
     const response = await request(app)
       .patch('/api/v1/heroes/' + ironmanId)
-      .send({})
       .set('Accept', 'application/json')
+      .set('x-token', token)
+      .send({})
       .expect('Content-Type', /application\/json/)
       .expect(400);
     expect(response.body.errors[0].msg).toBe('Body cannot be empty!');
@@ -318,6 +359,7 @@ describe('PATCH /api/v1/heroes/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/heroes/${ironmanId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         ...heroesList[1],
         gender: '',
@@ -330,6 +372,7 @@ describe('PATCH /api/v1/heroes/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/heroes/${ironmanId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         ...heroesList[1],
         image: '',
@@ -342,6 +385,7 @@ describe('PATCH /api/v1/heroes/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/heroes/${ironmanId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         heroName: 'Hulk',
         realName: 'Steve Banner',
@@ -359,6 +403,7 @@ describe('PATCH /api/v1/heroes/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/heroes/${ironmanId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         heroName: 'Hulk',
         realName: 'Steve Banner',
@@ -376,6 +421,7 @@ describe('PATCH /api/v1/heroes/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/heroes/${ironmanId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .send({
         ...heroesList[1],
         image: 'https://domain.com/updated-image.jpg',
@@ -399,6 +445,7 @@ describe('DELETE /api/v1/heroes/:id', () => {
     const response = await request(app)
       .delete(`/api/v1/heroes/${id}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /json/)
       .expect(400);
     expect(response.body.errors[0].msg).toBe('Provided id is not a valid Mongo ID');
@@ -408,6 +455,7 @@ describe('DELETE /api/v1/heroes/:id', () => {
     const response = await request(app)
       .delete(`/api/v1/heroes/${id}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /json/)
       .expect(400);
     expect(response.body.errors[0].msg).toBe(`Hero with \"${id}\" does not exist!`);
@@ -416,6 +464,7 @@ describe('DELETE /api/v1/heroes/:id', () => {
     const response = await request(app)
       .delete(`/api/v1/heroes/${spidermanId}`)
       .set('Accept', 'application/json')
+      .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(200);
     expect(response.body.ok).toBe(true);

@@ -3,8 +3,12 @@ import { check, body } from 'express-validator';
 import * as HeroesController from './heroes.controller';
 import { fieldValidation } from '../../middlewares/field-validations';
 import { isHeroExist, isHeroExistById, isEmptyBody } from '../../helpers/db-validators';
+import { validateJWT } from '../../middlewares/validate-jwt';
 
 const router = Router();
+
+// JWT Validate
+router.use(validateJWT);
 
 router.get('/', HeroesController.heroesList);
 
