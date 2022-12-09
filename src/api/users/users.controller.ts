@@ -1,6 +1,7 @@
 import { Response, Request, NextFunction } from 'express';
 import User from './users.model';
 import { encryptPassword } from '../../helpers/encryptPassword';
+import { generateToken } from '../../helpers/jwt';
 
 export async function usersList(
   request: Request,
@@ -58,11 +59,15 @@ export async function createUser(
 
     const user = await User.create({ ...body, password: encryptedPassword });
 
-    // TODO: Generate JWT
+    const fullName = `${user.firstName} ${user.lastName}`;
+
+    //* Generate JWT
+    const token = await generateToken(String(user._id), fullName);
 
     return response.status(201).json({
       ok: true,
       user,
+      token,
     });
   } catch (error) {
     next(error);

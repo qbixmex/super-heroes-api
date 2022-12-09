@@ -5,8 +5,11 @@ import User from '../../users/users.model';
 import app from '../../../app';
 import { usersList } from '../../users/tests/users.fixtures';
 import { encryptPassword } from '../../../helpers/encryptPassword';
+import { generateToken } from '../../../helpers/jwt';
 
-let stanLeeId = '';
+let token: string;
+let userId: string;
+let fullName: string;
 
 beforeAll(async () => {
   try {
@@ -17,9 +20,13 @@ beforeAll(async () => {
     const encryptedPassword = encryptPassword(usersList[0].password);
     await User.create({ ...usersList[0], password: encryptedPassword });
 
-    const stanLee = await User.findOne({ email: 'stanlee@marvel.com' });
+    const user = await User.findOne({ email: 'stanlee@marvel.com' });
 
-    stanLeeId = String(stanLee?._id);
+    fullName = `${user?.firstName} ${user?.lastName}`;
+    userId = String(user?._id);
+
+    //* Generate JWT
+    token = await generateToken(String(user?._id), fullName, 1);
 
   } catch (error) {
     console.log(error);
@@ -121,6 +128,49 @@ describe('POST /api/v1/auth', () => {
       ok: true,
       uid: expect.any(String),
       name: `${usersList[0].firstName} ${usersList[0].lastName}`,
+      token: expect.any(String),
+    });
+  });
+});
+
+describe('GET /api/v1/auth', () => {
+  test('Responds 401 if token was not found', async () => {
+    const response = await request(app)
+      .get('/api/v1/auth/renew')
+      .set('Accept', 'application/json')
+      .set('x-token', '')
+      .expect('Content-Type', /application\/json/)
+      .expect(401);
+
+    expect(response.body).toEqual({
+      ok: false,
+      msg: "There's not token by the request",
+    });
+  });
+  test('Responds 401 if token has been expired or not valid', async () => {
+    const expiredToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2MzkzODMxMWY5Njg2NDFiNjI0ZDFkNTIiLCJuYW1lIjoiU3RhbiBMZWUiLCJpYXQiOjE2NzA2MTE3MjksImV4cCI6MTY3MDYxMTczMH0.3EUsq4jGIYip8uxOP00rCtyjLqRBfN6cMh_S1ndQL1k';
+    const response = await request(app)
+      .get('/api/v1/auth/renew')
+      .set('Accept', 'application/json')
+      .set('x-token', expiredToken)
+      .expect('Content-Type', /application\/json/)
+      .expect(401);
+
+    expect(response.body).toEqual({
+      ok: false,
+      msg: 'Token is not valid',
+    });
+  });  
+  test('Responds 200 ok if endpoint exists', async () => {
+    const response = await request(app)
+      .get('/api/v1/auth/renew')
+      .set('Accept', 'application/json')
+      .set('x-token', token)
+      .expect('Content-Type', /application\/json/)
+      .expect(200);
+
+    expect(response.body).toEqual({
+      ok: true,
       token: expect.any(String),
     });
   });

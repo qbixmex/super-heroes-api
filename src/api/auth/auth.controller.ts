@@ -46,3 +46,23 @@ export async function login(
     next(error);
   }
 }
+
+export async function renewToken(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+) {
+  try {
+    const { uid, name } = request;
+
+    //* Generate JWT
+    const token = await generateToken(uid, name);
+
+    return response.status(200).json({
+      ok: true,
+      token,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
