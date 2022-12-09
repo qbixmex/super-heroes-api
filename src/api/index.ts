@@ -2,6 +2,7 @@ import express from 'express';
 
 import heroes from './heroes/heroes.routes';
 import users from './users/users.routes';
+import auth from './auth/auth.routes';
 
 const router = express.Router();
 
@@ -13,5 +14,6 @@ router.get('/', (request, response) => {
 
 router.use('/heroes', heroes);
 router.use('/users', users);
+router.use('/auth', auth);
 
 export default router;
