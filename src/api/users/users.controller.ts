@@ -58,6 +58,8 @@ export async function createUser(
 
     const user = await User.create({ ...body, password: encryptedPassword });
 
+    // TODO: Generate JWT
+
     return response.status(201).json({
       ok: true,
       user,

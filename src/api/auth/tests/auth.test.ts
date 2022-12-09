@@ -112,7 +112,7 @@ describe('POST /api/v1/auth', () => {
       .set('Accept', 'application/json')
       .send({
         email: usersList[0].email,
-        password: usersList[0].password,
+        password: usersList[0].password,        
       })
       .expect('Content-Type', /application\/json/)
       .expect(200);
@@ -121,6 +121,7 @@ describe('POST /api/v1/auth', () => {
       ok: true,
       uid: expect.any(String),
       name: `${usersList[0].firstName} ${usersList[0].lastName}`,
+      token: expect.any(String),
     });
   });
 });
