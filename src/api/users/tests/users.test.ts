@@ -4,6 +4,7 @@ import User from '../users.model';
 
 import app from '../../../app';
 import { usersList } from './users.fixtures';
+import { encryptPassword } from '../../../helpers/encryptPassword';
 
 let stanLeeId = '';
 let jackKirbyId = '';
@@ -12,9 +13,12 @@ beforeEach(async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI_TEST!);
     await User.deleteMany({});
+
     for (let i = 0; i < usersList.length; i++) {
-      await User.create(usersList[i]);
+      const encryptedPassword = encryptPassword(usersList[i].password);
+      await User.create({ ...usersList[i], password: encryptedPassword });
     }
+
     const stanLee = await User.findOne({ email: 'stanlee@marvel.com' });
     const jackKirby = await User.findOne({ email: 'jack-kirby@marvel.com' });
 
@@ -289,8 +293,8 @@ describe('POST /api/v1/users', () => {
       lastName: 'Jackson',
       email: 'michael-jackson@moonwalker.com',
       image: 'michael-jackson.jpg',
+      password: 'secret-password',
       role: 'admin',
-      password: 'moonwalker-yujuuuu',
     };
     const response = await request(app)
       .post('/api/v1/users')
@@ -301,7 +305,12 @@ describe('POST /api/v1/users', () => {
     expect(response.body.ok).toBe(true);
     expect(response.body.user).toEqual({
       _id: expect.any(String),
-      ...newUser,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+      email: newUser.email,
+      image: newUser.image,
+      password: expect.any(String),
+      role: newUser.role,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });

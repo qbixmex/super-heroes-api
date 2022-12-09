@@ -1,5 +1,6 @@
 import { Response, Request, NextFunction } from 'express';
 import User from './users.model';
+import { encryptPassword } from '../../helpers/encryptPassword';
 
 export async function usersList(
   request: Request,
@@ -50,7 +51,13 @@ export async function createUser(
   next: NextFunction,
 ) {
   try {
-    const user = await User.create(request.body);
+    const body = request.body;
+
+    //* Encrypt Password
+    const encryptedPassword = encryptPassword(request.body.password, 10);
+
+    const user = await User.create({ ...body, password: encryptedPassword });
+
     return response.status(201).json({
       ok: true,
       user,

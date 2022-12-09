@@ -1,5 +1,4 @@
 import { Response, Request, NextFunction } from 'express';
-
 import Hero from './heroes.model';
 
 export async function heroesList(
@@ -55,7 +54,7 @@ export async function create(
   response: Response,
   next: NextFunction,
 ) {
-  try {    
+  try {
     const hero = await Hero.create(request.body);
     return response.status(201).json({
       ok: true,
