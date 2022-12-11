@@ -60,6 +60,8 @@ export async function renewToken(
 
     return response.status(200).json({
       ok: true,
+      name,
+      uid,
       token,
     });
   } catch (error) {
