@@ -2,6 +2,7 @@ import express from 'express';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
+import fileUpload from 'express-fileupload';
 
 import * as middlewares from './middlewares';
 import api from './api';
@@ -15,6 +16,13 @@ app.use(morgan('dev'));
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+//* File Uploads
+app.use(fileUpload({
+  useTempFiles: true,
+  tempFileDir: '/tmp/',
+  createParentPath: true,
+}));
 
 app.get<{}, MessageResponse>('/', (_request, response) => {
   return response.json({

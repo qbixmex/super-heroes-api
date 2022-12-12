@@ -24,7 +24,7 @@ router.post('/', [
   check('realName', 'Hero real name is required!').notEmpty(),
   check('studio', 'Studio is required!').notEmpty(),
   check('gender', 'Gender is required!').notEmpty(),
-  check('image', 'Image is required!').notEmpty(),
+  // check('image', 'Image is required!').notEmpty(),
   check('heroName').custom((heroName) => isHeroExist(heroName)),
   check('nationality', 'Nationality must be a string!').isString(),
   check('powers', 'Powers must be a string!').isString(),

@@ -1,4 +1,5 @@
 import { Response, Request, NextFunction } from 'express';
+import { uploadFile } from '../../helpers';
 import Hero from './heroes.model';
 
 export async function heroesList(
@@ -52,14 +53,32 @@ export async function heroDetails(
 export async function create(
   request: Request,
   response: Response,
-  next: NextFunction,
+  next:NextFunction,
 ) {
+  if (
+    !request.files?.image
+    || Object.keys(request.files).length === 0
+  ) {
+    response.status(400).json({
+      ok: false,
+      msg: 'No file was uploaded!',
+    });
+    return;
+  }
+
   try {
-    const hero = await Hero.create(request.body);
+    const imageName = await uploadFile(request.files, undefined, 'heroes');
+
+    const hero = await Hero.create({
+      ...request.body,
+      image: imageName,
+    });
+
     return response.status(201).json({
       ok: true,
       hero,
     });
+
   } catch (error) {
     next(error);
   }
