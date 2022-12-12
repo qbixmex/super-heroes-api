@@ -61,11 +61,6 @@ export async function createUser(
 
     const user = await User.create({ ...body, password: encryptedPassword });
 
-    const fullName = `${user.firstName} ${user.lastName}`;
-
-    //* Generate JWT
-    const token = await generateToken(String(user._id), fullName);
-
     delete user.password;
 
     return response.status(201).json({
@@ -80,7 +75,6 @@ export async function createUser(
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },
-      token,
     });
   } catch (error) {
     next(error);

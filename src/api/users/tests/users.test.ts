@@ -349,7 +349,6 @@ describe('POST /api/v1/users', () => {
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       },
-      token: expect.any(String),
     });
   });
 });
