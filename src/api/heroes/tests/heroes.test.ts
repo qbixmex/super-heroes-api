@@ -1,3 +1,5 @@
+import path from 'path';
+import fs from 'fs';
 import request from 'supertest';
 import mongoose from 'mongoose';
 import User from '../../users/users.model';
@@ -13,6 +15,8 @@ let fullName: string;
 let token: string;
 let spidermanId: string;
 let ironmanId: string;
+const imagePath = path.join(__dirname, '/assets/', 'image-placeholder.jpg');
+const heroesImagesPath = path.join(__dirname, '../../../uploads/heroes');
 
 beforeEach(async () => {
   try {
@@ -21,7 +25,7 @@ beforeEach(async () => {
     await Hero.deleteMany({});
 
     //* Generate JWT
-    const encryptedPassword = encryptPassword(usersList[0].password);
+    const encryptedPassword = encryptPassword(usersList[0].password!);
     await User.create({ ...usersList[0], password: encryptedPassword });
 
     const user = await User.findOne({ email: 'stanlee@marvel.com' });
@@ -29,7 +33,7 @@ beforeEach(async () => {
     fullName = `${user?.firstName} ${user?.lastName}`;
 
     //* Generate JWT
-    token = await generateToken(String(user?._id), fullName, 1);
+    token = await generateToken(String(user?._id), fullName, 60);
 
     //* Create Heroes
     for (let i = 0; i < heroesList.length; i++) {
@@ -150,7 +154,17 @@ describe('GET /api/v1/heroes/:id', () => {
   });
 });
 
-describe('POST /api/v1/heroes', () => {
+describe.only('POST /api/v1/heroes', () => {
+  test('Responds with status 400 if body is empty', async () => {
+    const response = await request(app)
+      .post('/api/v1/heroes')
+      .set('Accept', 'application/json')
+      .set('x-token', token)
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.ok).toBe(false);
+    expect(response.body.errors[0].msg).toBe('Body cannot be empty!');
+  });
   test('Responds with status 400 if hero name is empty', async () => {
     const response = await request(app)
       .post('/api/v1/heroes')
@@ -159,6 +173,7 @@ describe('POST /api/v1/heroes', () => {
       .send({
         realName: 'Peter Parker',
         studio: 'Marvel',
+        gender: 'Male',
       })
       .expect('Content-Type', /application\/json/)
       .expect(400);
@@ -174,7 +189,6 @@ describe('POST /api/v1/heroes', () => {
         realName: 'Peter Parker',
         studio: 'Marvel',
         gender: 'Male',
-        image: 'https://domain.com/image.jpg',
       })
       .expect('Content-Type', /application\/json/)
       .expect(400);
@@ -216,30 +230,12 @@ describe('POST /api/v1/heroes', () => {
         heroName: 'Hulk',
         realName: 'Steve Banner',
         studio: 'Marvel',
-        image: 'https://domain.com/image.jpg',
         nationality: 'American',
         powers: 'Strength, Smash',
       })
       .expect('Content-Type', /application\/json/)
       .expect(400);
     expect(response.body.errors[0].msg).toBe('Gender is required!');
-  });
-  test('Responds with status 400 if image is empty', async () => {
-    const response = await request(app)
-      .post('/api/v1/heroes')
-      .set('Accept', 'application/json')
-      .set('x-token', token)
-      .send({
-        heroName: 'Hulk',
-        realName: 'Steve Banner',
-        studio: 'Marvel',
-        gender: 'Male',
-        nationality: 'American',
-        powers: 'Strength, Smash',
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
-    expect(response.body.errors[0].msg).toBe('Image is required!');
   });
   test('Responds with status 400 if nationality is not a string', async () => {
     const response = await request(app)
@@ -251,7 +247,6 @@ describe('POST /api/v1/heroes', () => {
         realName: 'Steve Banner',
         studio: 'Marvel',
         gender: 'Male',
-        image: 'https://domain.com/image.jpg',
         nationality: 123,
         powers: 'Strength, Smash',
       })
@@ -277,13 +272,32 @@ describe('POST /api/v1/heroes', () => {
       .expect(400);
     expect(response.body.errors[0].msg).toBe('Powers must be a string!');
   });
+  test('Responds with status 400 if image is empty', async () => {
+    const response = await request(app)
+      .post('/api/v1/heroes')
+      .set('Accept', 'application/json')
+      .set('x-token', token)
+      .send({
+        heroName: 'Hulk',
+        realName: 'Steve Banner',
+        studio: 'Marvel',
+        gender: 'Male',
+        nationality: 'American',
+        powers: 'Smash, Strength',
+      })
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body).toEqual({
+      ok: false,
+      msg: 'No image was provided!',
+    });
+  });
   test('Responds with response 201', async () => {
     const newHero = {
       heroName: 'Scarlet Witch',
       realName: 'Wanda Maximoff',
       studio: 'Marvel',
       gender: 'Female',
-      image: 'https://domain.com/image.jpg',
       nationality: 'Sokovia',
       powers: 'Telekinesis, Energy manipulation, Neuroelectric Interfacing',
     };
@@ -291,16 +305,28 @@ describe('POST /api/v1/heroes', () => {
       .post('/api/v1/heroes')
       .set('Accept', 'application/json')
       .set('x-token', token)
-      .send(newHero)
+      .attach('image', imagePath)
+      .field(newHero)
       .expect('Content-Type', /application\/json/)
       .expect(201);
-    expect(response.body.ok).toBe(true);
-    expect(response.body.hero).toEqual({
-      _id: expect.any(String),
-      ...newHero,
-      createdAt: expect.any(String),
-      updatedAt: expect.any(String),
+
+    console.log(response.body);
+
+    expect(response.body).toEqual({
+      ok: true,
+      hero: {
+        _id: expect.any(String),
+        ...newHero,
+        image: expect.any(String),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      },
     });
+
+    //* Clear Image Placeholder
+    if (fs.existsSync(heroesImagesPath)) {
+      fs.unlinkSync(`${heroesImagesPath}/${response.body.hero.image}`);
+    }
   });
 });
 

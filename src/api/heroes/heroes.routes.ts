@@ -24,11 +24,11 @@ router.post('/', [
   check('realName', 'Hero real name is required!').notEmpty(),
   check('studio', 'Studio is required!').notEmpty(),
   check('gender', 'Gender is required!').notEmpty(),
-  validateFile, // <- Custom Middleware
   check('heroName').custom((heroName) => isHeroExist(heroName)),
   check('nationality', 'Nationality must be a string!').isString(),
   check('powers', 'Powers must be a string!').isString(),
   fieldValidation,
+  validateFile, // <- Custom Middleware
 ], HeroesController.create);
 
 router.patch('/:id', [
