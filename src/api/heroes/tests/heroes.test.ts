@@ -455,7 +455,7 @@ describe('PATCH /api/v1/heroes/:id', () => {
   });
 });
 
-describe('DELETE /api/v1/heroes/:id', () => {
+describe.only('DELETE /api/v1/heroes/:id', () => {
   test('Responds with status code 400 if id is not valid', async () => {
     const id = 123;
     const response = await request(app)
@@ -483,7 +483,10 @@ describe('DELETE /api/v1/heroes/:id', () => {
       .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(200);
-    expect(response.body.ok).toBe(true);
+    expect(response.body).toEqual({
+      ok: true,
+      msg: 'Hero has been deleted successfully',
+    });
   });
 });
 

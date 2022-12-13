@@ -114,9 +114,20 @@ export async function destroy(
   try {
     const id = request.params.id;
 
-    await Hero.findOneAndDelete({ _id: id });
+    const hero = await Hero.findOneAndDelete({ _id: id });
 
-    return response.status(200).json({ ok: true });
+    //* Clean previous image
+    if (hero?.image) {
+      const imagePath = path.join(__dirname, '../../uploads/heroes', hero.image);
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    }
+
+    return response.status(200).json({
+      ok: true,
+      msg: 'Hero has been deleted successfully',
+    });
 
   } catch (error) {
     next(error);
