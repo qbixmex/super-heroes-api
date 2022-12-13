@@ -1,3 +1,5 @@
+import path from 'path';
+import fs from 'fs';
 import { Response, Request, NextFunction } from 'express';
 import { uploadFile } from '../../helpers';
 import Hero from './heroes.model';
@@ -79,19 +81,25 @@ export async function update(
   next: NextFunction,
 ) {
   try {
-
     const id = request.params.id;
+    const body = request.body;
 
-    const updatedHero = await Hero.findOneAndUpdate(
-      { _id: id },
-      request.body,
-      { new: true },
-    );
+    const updatedHero = await Hero.findOneAndUpdate({ _id: id }, { ...body }, { new: true });
 
-    return response.status(200).json({
-      ok: true,
-      hero: updatedHero,
-    });
+    if (request.files?.image) {
+      //* Clean previous image
+      if (updatedHero?.image) {
+        const imagePath = path.join(__dirname, '../../uploads/heroes', updatedHero.image);
+        if (fs.existsSync(imagePath)) {
+          fs.unlinkSync(imagePath);
+        }
+      }
+      const newImageName = await uploadFile(request.files, undefined, 'heroes');
+      updatedHero!.image = newImageName;
+      updatedHero?.save();
+    }
+
+    return response.status(200).json({ ok: true, hero: updatedHero });
 
   } catch (error) {
     next(error);
