@@ -55,17 +55,6 @@ export async function create(
   response: Response,
   next:NextFunction,
 ) {
-  if (
-    !request.files?.image
-    || Object.keys(request.files).length === 0
-  ) {
-    response.status(400).json({
-      ok: false,
-      msg: 'No file was uploaded!',
-    });
-    return;
-  }
-
   try {
     const imageName = await uploadFile(request.files, undefined, 'heroes');
 
