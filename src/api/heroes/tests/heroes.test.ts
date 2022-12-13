@@ -154,7 +154,7 @@ describe('GET /api/v1/heroes/:id', () => {
   });
 });
 
-describe.only('POST /api/v1/heroes', () => {
+describe('POST /api/v1/heroes', () => {
   test('Responds with status 400 if body is empty', async () => {
     const response = await request(app)
       .post('/api/v1/heroes')
@@ -309,9 +309,6 @@ describe.only('POST /api/v1/heroes', () => {
       .field(newHero)
       .expect('Content-Type', /application\/json/)
       .expect(201);
-
-    console.log(response.body);
-
     expect(response.body).toEqual({
       ok: true,
       hero: {
@@ -331,6 +328,16 @@ describe.only('POST /api/v1/heroes', () => {
 });
 
 describe('PATCH /api/v1/heroes/:id', () => {
+  test('Responds with status 400 if body is empty', async () => {
+    const response = await request(app)
+      .patch(`/api/v1/heroes/${spidermanId}`)
+      .set('Accept', 'application/json')
+      .set('x-token', token)
+      .expect('Content-Type', /application\/json/)
+      .expect(400);
+    expect(response.body.ok).toBe(false);
+    expect(response.body.errors[0].msg).toBe('Body cannot be empty!');
+  });
   test('Responds with status code 400 if id is not valid', async () => {
     const id = 123;
     const response = await request(app)
@@ -371,16 +378,6 @@ describe('PATCH /api/v1/heroes/:id', () => {
     expect(response.body.errors[0].msg)
       .toBe('Hero "Spiderman" already exists!');
   });
-  test('Responds with status 400 if user send empty body', async () => {
-    const response = await request(app)
-      .patch('/api/v1/heroes/' + ironmanId)
-      .set('Accept', 'application/json')
-      .set('x-token', token)
-      .send({})
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
-    expect(response.body.errors[0].msg).toBe('Body cannot be empty!');
-  });
   test('Responds with status 400 if gender is empty', async () => {
     const response = await request(app)
       .patch(`/api/v1/heroes/${ironmanId}`)
@@ -393,19 +390,6 @@ describe('PATCH /api/v1/heroes/:id', () => {
       .expect('Content-Type', /application\/json/)
       .expect(400);
     expect(response.body.errors[0].msg).toBe('Gender cannot be empty!');
-  });
-  test('Responds with status 400 if image is empty', async () => {
-    const response = await request(app)
-      .patch(`/api/v1/heroes/${ironmanId}`)
-      .set('Accept', 'application/json')
-      .set('x-token', token)
-      .send({
-        ...heroesList[1],
-        image: '',
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
-    expect(response.body.errors[0].msg).toBe('Image cannot be empty!');
   });
   test('Responds with status 400 if nationality is not a string', async () => {
     const response = await request(app)
@@ -448,20 +432,26 @@ describe('PATCH /api/v1/heroes/:id', () => {
       .patch(`/api/v1/heroes/${ironmanId}`)
       .set('Accept', 'application/json')
       .set('x-token', token)
-      .send({
-        ...heroesList[1],
-        image: 'https://domain.com/updated-image.jpg',
-      })
+      .attach('image', imagePath)
+      .field({ ...heroesList[1] })
       .expect('Content-Type', /application\/json/)
       .expect(200);
     expect(response.body.ok).toBe(true);
-    expect(response.body.hero).toEqual({
-      _id: ironmanId,
-      ...heroesList[1],
-      image: 'https://domain.com/updated-image.jpg',
-      createdAt: expect.any(String),
-      updatedAt: expect.any(String),
+    expect(response.body).toEqual({
+      ok: true,
+      hero: {
+        _id: ironmanId,
+        ...heroesList[1],
+        image: expect.any(String),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      },
     });
+
+    //* Clear Image Placeholder
+    if (fs.existsSync(heroesImagesPath)) {
+      fs.unlinkSync(`${heroesImagesPath}/${response.body.hero.image}`);
+    }
   });
 });
 
