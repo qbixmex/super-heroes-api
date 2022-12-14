@@ -121,16 +121,22 @@ export async function update(
     const updatedHero = await Hero.findOneAndUpdate({ _id: id }, { ...body }, { new: true });
 
     if (uploadedImage) {
-      // TODO: Clean previous image
+      //* Delete previous image
+      const publicId = updatedHero?.image.split('/').pop()?.split('.').shift();
+      await cloudinary.v2.uploader.destroy(`heroes/${publicId}`);
 
+      //* Upload new image
       const cloudinaryResponse = await cloudinary.v2
         .uploader.upload(
           uploadedImage.tempFilePath,
-          { upload_preset: 'react-journal-2022' },
-          (error, result) => {
-            console.log(result, error);
-          },
+          { upload_preset: 'heroes' },
+          //? For debugging
+          // (error, result) => {
+          //   console.log(result, error);
+          // },
         );
+
+      //* Save image secure url to hero image database
       updatedHero!.image = cloudinaryResponse.secure_url;
       updatedHero?.save();
     }
