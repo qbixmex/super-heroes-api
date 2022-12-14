@@ -3,6 +3,16 @@ import fs from 'fs';
 import { Response, Request, NextFunction } from 'express';
 import { uploadFile } from '../../helpers';
 import Hero from './heroes.model';
+import cloudinary from 'cloudinary';
+import { UploadedFile } from 'express-fileupload';
+
+// Config Cloudinary
+require('dotenv').config();
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function heroesList(
   request: Request,
@@ -106,23 +116,29 @@ export async function update(
   try {
     const id = request.params.id;
     const body = request.body;
+    const uploadedImage = request.files?.image as UploadedFile;
 
     const updatedHero = await Hero.findOneAndUpdate({ _id: id }, { ...body }, { new: true });
 
-    if (request.files?.image) {
-      //* Clean previous image
-      if (updatedHero?.image) {
-        const imagePath = path.join(__dirname, '../../uploads/heroes', updatedHero.image);
-        if (fs.existsSync(imagePath)) {
-          fs.unlinkSync(imagePath);
-        }
-      }
-      const newImageName = await uploadFile(request.files, undefined, 'heroes');
-      updatedHero!.image = newImageName;
+    if (uploadedImage) {
+      // TODO: Clean previous image
+
+      const cloudinaryResponse = await cloudinary.v2
+        .uploader.upload(
+          uploadedImage.tempFilePath,
+          { upload_preset: 'react-journal-2022' },
+          (error, result) => {
+            console.log(result, error);
+          },
+        );
+      updatedHero!.image = cloudinaryResponse.secure_url;
       updatedHero?.save();
     }
 
-    return response.status(200).json({ ok: true, hero: updatedHero });
+    return response.status(200).json({
+      ok: true,
+      hero: updatedHero,
+    });
 
   } catch (error) {
     next(error);

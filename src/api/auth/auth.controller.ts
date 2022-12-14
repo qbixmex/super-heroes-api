@@ -33,7 +33,7 @@ export async function login(
     const fullName = `${user.firstName} ${user.lastName}`;
 
     //* Generate JWT
-    const token = await generateToken(String(user._id), fullName);
+    const token = await generateToken(String(user._id), fullName, '24h');
 
     return response.status(200).json({
       ok: true,
