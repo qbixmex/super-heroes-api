@@ -7,16 +7,17 @@ import { validateJWT } from '../../middlewares/validate-jwt';
 
 const router = Router();
 
-// JWT Validate
-router.use(validateJWT);
-
-router.get('/', HeroesController.heroesList);
-
+// Public Routes
 router.get('/image/:id', [
   check('id', 'Provided id is not a valid Mongo ID').isMongoId(),
   check('id').custom(isHeroExistById),
   fieldValidation,
 ], HeroesController.heroImage);
+
+// JWT Validate
+router.use(validateJWT);
+
+router.get('/', HeroesController.heroesList);
 
 router.get('/:id', [
   check('id', 'Provided id is not a valid Mongo ID').isMongoId(),
