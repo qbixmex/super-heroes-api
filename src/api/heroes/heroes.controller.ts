@@ -52,6 +52,29 @@ export async function heroDetails(
   }
 }
 
+export async function heroImage(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+) {
+  try {
+    const hero = await Hero.findOne({ _id: request.params.id })
+      .select('image -_id');
+
+    if (hero?.image) {
+      const imagePath = path.join(__dirname, '../../uploads/heroes', hero?.image);
+      if (fs.existsSync(imagePath)) {
+        return response.status(200).sendFile(imagePath);
+      }
+    }
+
+    const imagePlaceHolder = path.join(__dirname, '../../assets/image-placeholder.jpg');
+    return response.status(200).sendFile(imagePlaceHolder);
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function create(
   request: Request,
   response: Response,

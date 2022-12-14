@@ -154,6 +154,38 @@ describe('GET /api/v1/heroes/:id', () => {
   });
 });
 
+describe('GET /api/v1/heroes/image/:id', () => {
+  test('Responds with status code 400 if id is not valid', async () => {
+    const id = 123;
+    const response = await request(app)
+      .get(`/api/v1/heroes/image/${id}`)
+      .set('Accept', 'application/json')
+      .set('x-token', token)
+      .expect('Content-Type', /json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe('Provided id is not a valid Mongo ID');
+  });
+  test('Responds with status code 404 hero is not found', async () => {
+    const id = '6385cbca684dd769f24c045d';
+    const response = await request(app)
+      .get(`/api/v1/heroes/${id}`)
+      .set('Accept', 'application/json')
+      .set('x-token', token)
+      .expect('Content-Type', /json/)
+      .expect(400);
+    expect(response.body.errors[0].msg).toBe(`Hero with "${id}" does not exist!`);
+  });
+  test('Should show an image saved to file system', async () => {
+    const response = await request(app)
+      .get(`/api/v1/heroes/image/${spidermanId}`)
+      .set('Accept', 'application/json')
+      .set('x-token', token)
+      .expect('Content-Type', /image\/jpeg/)
+      .expect(200);
+    expect(response.body).toBeTruthy();
+  });
+});
+
 describe('POST /api/v1/heroes', () => {
   test('Responds with status 400 if body is empty', async () => {
     const response = await request(app)
@@ -455,7 +487,7 @@ describe('PATCH /api/v1/heroes/:id', () => {
   });
 });
 
-describe.only('DELETE /api/v1/heroes/:id', () => {
+describe('DELETE /api/v1/heroes/:id', () => {
   test('Responds with status code 400 if id is not valid', async () => {
     const id = 123;
     const response = await request(app)
