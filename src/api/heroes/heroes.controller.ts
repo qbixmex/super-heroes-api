@@ -171,13 +171,9 @@ export async function destroy(
 
     const hero = await Hero.findOneAndDelete({ _id: id });
 
-    //* Clean previous image
-    if (hero?.image) {
-      const imagePath = path.join(__dirname, '../../uploads/heroes', hero.image);
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
-    }
+    //* Delete previous image
+    const publicId = hero?.image.split('/').pop()?.split('.').shift();
+    await cloudinary.v2.uploader.destroy(`heroes/${publicId}`);
 
     return response.status(200).json({
       ok: true,
