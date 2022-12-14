@@ -4,6 +4,15 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import User from '../../users/users.model';
 import Hero from '../heroes.model';
+import cloudinary from 'cloudinary';
+
+//* Config Cloudinary
+require('dotenv').config();
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 import app from '../../../app';
 import { heroesList } from './heroes.fixtures';
@@ -341,6 +350,7 @@ describe('POST /api/v1/heroes', () => {
       .field(newHero)
       .expect('Content-Type', /application\/json/)
       .expect(201);
+
     expect(response.body).toEqual({
       ok: true,
       hero: {
@@ -352,10 +362,11 @@ describe('POST /api/v1/heroes', () => {
       },
     });
 
-    //* Clear Image Placeholder
-    if (fs.existsSync(heroesImagesPath)) {
-      fs.unlinkSync(`${heroesImagesPath}/${response.body.hero.image}`);
-    }
+    const hero = response.body.hero;
+
+    //* Clear Image from Cloudinary
+    const publicId = hero?.image.split('/').pop()?.split('.').shift();
+    await cloudinary.v2.uploader.destroy(`heroes/${publicId}`);
   });
 });
 
@@ -468,6 +479,7 @@ describe('PATCH /api/v1/heroes/:id', () => {
       .field({ ...heroesList[1] })
       .expect('Content-Type', /application\/json/)
       .expect(200);
+
     expect(response.body.ok).toBe(true);
     expect(response.body).toEqual({
       ok: true,
@@ -480,10 +492,11 @@ describe('PATCH /api/v1/heroes/:id', () => {
       },
     });
 
-    //* Clear Image Placeholder
-    if (fs.existsSync(heroesImagesPath)) {
-      fs.unlinkSync(`${heroesImagesPath}/${response.body.hero.image}`);
-    }
+    const hero = response.body.hero;
+
+    //* Clear Image from Cloudinary
+    const publicId = hero?.image.split('/').pop()?.split('.').shift();
+    await cloudinary.v2.uploader.destroy(`heroes/${publicId}`);
   });
 });
 
