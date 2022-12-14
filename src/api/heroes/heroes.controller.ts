@@ -88,14 +88,24 @@ export async function heroImage(
 export async function create(
   request: Request,
   response: Response,
-  next:NextFunction,
+  next: NextFunction,
 ) {
+  const uploadedImage = request.files?.image as UploadedFile;
   try {
-    const imageName = await uploadFile(request.files, undefined, 'heroes');
+    //* Upload new image
+    const cloudinaryResponse = await cloudinary.v2
+      .uploader.upload(
+        uploadedImage.tempFilePath,
+        { upload_preset: 'heroes' },
+        //? For debugging
+        // (error, result) => {
+        //   console.log(result, error);
+        // },
+      );
 
     const hero = await Hero.create({
       ...request.body,
-      image: imageName,
+      image: cloudinaryResponse.secure_url,
     });
 
     return response.status(201).json({
@@ -113,11 +123,11 @@ export async function update(
   response: Response,
   next: NextFunction,
 ) {
-  try {
-    const id = request.params.id;
-    const body = request.body;
-    const uploadedImage = request.files?.image as UploadedFile;
+  const id = request.params.id;
+  const body = request.body;
+  const uploadedImage = request.files?.image as UploadedFile;
 
+  try {
     const updatedHero = await Hero.findOneAndUpdate({ _id: id }, { ...body }, { new: true });
 
     if (uploadedImage) {

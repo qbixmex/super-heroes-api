@@ -1,6 +1,6 @@
 {
   "name": "super-heroes-api",
-  "version": "2.6.1",
+  "version": "2.7.0",
   "description": "Restfull API with Express and Typescript",
   "main": "src/index.ts",
   "scripts": {
