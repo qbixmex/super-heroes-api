@@ -1,8 +1,7 @@
 import { Response, Request, NextFunction } from 'express';
 import User from './users.model';
 import { encryptPassword } from '../../helpers/encryptPassword';
-import { generateToken } from '../../helpers/jwt';
-import { UserInterface } from '../../interfaces/user.interface';
+import { IUser } from '../../interfaces/user.interface';
 
 export async function usersList(
   request: Request,
@@ -90,7 +89,7 @@ export async function updateUser(
     const id = request.params.id;
     const { firstName, lastName, email, image, role, password } = request.body;
 
-    const userForUpdate: UserInterface = {
+    const userForUpdate: IUser = {
       firstName,
       lastName,
       email,

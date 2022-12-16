@@ -1,6 +1,6 @@
-import { HeroInterface } from '../../../interfaces';
+import { IHero } from '../../../interfaces';
 
-export const heroesList: HeroInterface[] = [
+export const heroes: IHero[] = [
   {
     heroName: 'Spiderman',
     realName: 'Peter Parker',

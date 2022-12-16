@@ -1,6 +1,6 @@
-import { UserInterface } from '../../../interfaces';
+import { IUser } from '../../../interfaces';
 
-export const usersList: UserInterface[] = [
+export const users: IUser[] = [
   {
     firstName: 'Stan',
     lastName: 'Lee',

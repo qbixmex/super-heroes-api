@@ -4,8 +4,4 @@ module.exports = {
   testEnvironment: 'node',
   setupFilesAfterEnv: ['<rootDir>/src/setupFilesAfterEnv.ts'],
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
-  testMatch: [
-    '<rootDir>/**/__tests__/**/?(*.)(spec|test).js',
-    '<rootDir>/**/?(*.)(spec|test).js',
-  ],
 };
