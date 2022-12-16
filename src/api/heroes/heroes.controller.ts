@@ -1,7 +1,6 @@
 import path from 'path';
 import fs from 'fs';
 import { Response, Request, NextFunction } from 'express';
-import { uploadFile } from '../../helpers';
 import Hero from './heroes.model';
 import cloudinary from 'cloudinary';
 import { UploadedFile } from 'express-fileupload';
