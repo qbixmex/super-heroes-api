@@ -3,7 +3,6 @@ import User from './users.model';
 import { encryptPassword } from '../../helpers/encryptPassword';
 import cloudinary from 'cloudinary';
 import { UploadedFile } from 'express-fileupload';
-import { IUser } from '../../interfaces/user.interface';
 
 // Config Cloudinary
 require('dotenv').config();
@@ -70,7 +69,10 @@ export async function createUser(
     const cloudinaryResponse = await cloudinary.v2
       .uploader.upload(
         uploadedImage.tempFilePath,
-        { upload_preset: 'heroesusers' },
+        {
+          upload_preset: 'heroes',
+          folder: 'users',
+        },
         //? For debugging
         // (error, result) => {
         //   console.log(result, error);
@@ -123,13 +125,13 @@ export async function updateUser(
     if (uploadedImage) {
       //* Delete previous image
       const publicId = user?.image.split('/').pop()?.split('.').shift();
-      await cloudinary.v2.uploader.destroy(`heroes/${publicId}`);
+      await cloudinary.v2.uploader.destroy(`users/${publicId}`);
 
       //* Upload new image
       const cloudinaryResponse = await cloudinary.v2
         .uploader.upload(
           uploadedImage.tempFilePath,
-          { upload_preset: 'heroes' },
+          { folder: 'users' },
           //? For debugging
           // (error, result) => {
           //   console.log(result, error);
@@ -178,7 +180,7 @@ export async function deleteUser(
 
     //* Delete previous image
     const publicId = user?.image.split('/').pop()?.split('.').shift();
-    await cloudinary.v2.uploader.destroy(`heroes/${publicId}`);
+    await cloudinary.v2.uploader.destroy(`users/${publicId}`);
 
     return response.status(200).json({ ok: true, msg: 'User was deleted successfully' });
   } catch (error) {
