@@ -1,9 +1,11 @@
+import path from 'path';
 import request from 'supertest';
 import mongoose from 'mongoose';
+import cloudinary from 'cloudinary';
 import User from '../users.model';
 
 import app from '../../../app';
-import { usersList } from './users.fixtures';
+import { users } from './users.fixtures';
 import { encryptPassword } from '../../../helpers/encryptPassword';
 import { generateToken } from '../../../helpers/jwt';
 
@@ -11,15 +13,16 @@ let fullName: string;
 let token: string;
 let stanLeeId: string;
 let jackKirbyId: string;
+const imagePath = path.join(__dirname, '/assets/', 'image-placeholder.jpg');
 
 beforeEach(async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI_TEST!);
     await User.deleteMany({});
 
-    for (let i = 0; i < usersList.length; i++) {
-      const encryptedPassword = encryptPassword(usersList[i].password!);
-      await User.create({ ...usersList[i], password: encryptedPassword });
+    for (let i = 0; i < users.length; i++) {
+      const encryptedPassword = encryptPassword(users[i].password!);
+      await User.create({ ...users[i], password: encryptedPassword });
     }    
 
     const stanLee = await User.findOne({ email: 'stanlee@marvel.com' });
@@ -42,21 +45,21 @@ describe('GET /api/v1/users', () => {
     const response = await request(app)
       .get('/api/v1/users')
       .set('Accept', 'application/json')
-      .set('x-token', token)
-      .expect('Content-Type', /application\/json/)
-      .expect(200);
+      .set('x-token', token);
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(200);
     expect(response.body.ok).toBe(true);
-    expect(response.body.users.length).toBe(usersList.length);
-    expect(response.body.total).toBe(usersList.length);
+    expect(response.body.users.length).toBe(users.length);
+    expect(response.body.total).toBe(users.length);
   });
   test('Show a limited list with provided query param', async () => {
     const limit = 1;
     const response = await request(app)
       .get(`/api/v1/users?limit=${limit}`)
       .set('Accept', 'application/json')
-      .set('x-token', token)
-      .expect('Content-Type', /application\/json/)
-      .expect(200);
+      .set('x-token', token);
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(200);
     expect(response.body.ok).toBe(true);
     expect(response.body.users.length).toBe(limit);
   });
@@ -64,9 +67,9 @@ describe('GET /api/v1/users', () => {
     const response = await request(app)
       .get('/api/v1/users?orderBy=email')
       .set('Accept', 'application/json')
-      .set('x-token', token)
-      .expect('Content-Type', /application\/json/)
-      .expect(200);
+      .set('x-token', token);
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(200);
     expect(response.body.ok).toBe(true);
     expect(response.body.users[0].email).toBe('jack-kirby@marvel.com');
   });
@@ -74,9 +77,9 @@ describe('GET /api/v1/users', () => {
     const response = await request(app)
       .get('/api/v1/users?orderBy=email&sort=desc')
       .set('Accept', 'application/json')
-      .set('x-token', token)
-      .expect('Content-Type', /application\/json/)
-      .expect(200);
+      .set('x-token', token);
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(200);
     expect(response.body.ok).toBe(true);
     expect(response.body.users[0].email).toBe('stanlee@marvel.com');
   });
@@ -84,9 +87,9 @@ describe('GET /api/v1/users', () => {
     const response = await request(app)
       .get('/api/v1/users?orderBy=firstName')
       .set('Accept', 'application/json')
-      .set('x-token', token)
-      .expect('Content-Type', /application\/json/)
-      .expect(200);
+      .set('x-token', token);
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(200);
     expect(response.body.ok).toBe(true);
     expect(response.body.users[0].firstName).toBe('Jack');
   });
@@ -94,9 +97,9 @@ describe('GET /api/v1/users', () => {
     const response = await request(app)
       .get('/api/v1/users?skip=1')
       .set('Accept', 'application/json')
-      .set('x-token', token)
-      .expect('Content-Type', /application\/json/)
-      .expect(200);
+      .set('x-token', token);
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(200);
     expect(response.body.ok).toBe(true);
     expect(response.body.users[0].email).toBe('jack-kirby@marvel.com');
   });
@@ -104,9 +107,9 @@ describe('GET /api/v1/users', () => {
     const response = await request(app)
       .get('/api/v1/users?orderBy=firstName&sort=desc')
       .set('Accept', 'application/json')
-      .set('x-token', token)
-      .expect('Content-Type', /application\/json/)
-      .expect(200);
+      .set('x-token', token);
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(200);
     expect(response.body.ok).toBe(true);
     expect(response.body.users[0].firstName).toBe('Stan');
   });
@@ -121,6 +124,8 @@ describe('GET /api/v1/users/:id', () => {
       .set('x-token', token)
       .expect('Content-Type', /application\/json/)
       .expect(400);
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.ok).toBe(false);
     expect(response.body.errors[0].msg)
       .toBe('Provided id is not a valid Mongo ID');
@@ -130,9 +135,9 @@ describe('GET /api/v1/users/:id', () => {
     const response = await request(app)
       .get(`/api/v1/users/${id}`)
       .set('Accept', 'application/json')
-      .set('x-token', token)
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
+      .set('x-token', token);
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.ok).toBe(false);
     expect(response.body.errors[0].msg)
       .toBe(`User with id: "${id}" does not exist!`);
@@ -141,18 +146,18 @@ describe('GET /api/v1/users/:id', () => {
     const response = await request(app)
       .get(`/api/v1/users/${stanLeeId}`)
       .set('Accept', 'application/json')
-      .set('x-token', token)
-      .expect('Content-Type', /application\/json/)
-      .expect(200);    
+      .set('x-token', token);
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(200);
     expect(response.body).toEqual({
       ok: true,
       user: {
         _id: stanLeeId,
-        firstName: usersList[0].firstName,
-        lastName: usersList[0].lastName,
-        email: usersList[0].email,
-        image: usersList[0].image,
-        role: usersList[0].role,
+        firstName: users[0].firstName,
+        lastName: users[0].lastName,
+        email: users[0].email,
+        image: expect.any(String),
+        role: users[0].role,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       },
@@ -166,9 +171,9 @@ describe('POST /api/v1/users', () => {
       .post('/api/v1/users')
       .set('Accept', 'application/json')
       .set('x-token', token)
-      .send({})
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
+      .send({});
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.ok).toBe(false);
     expect(response.body.errors[0].msg).toBe('Body cannot be empty!');
   });  
@@ -182,9 +187,9 @@ describe('POST /api/v1/users', () => {
         email: 'michael-jackson@moonwalker.com',
         role: 'regular',
         password: 'secret-password',
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
+      });
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.ok).toBe(false);
     expect(response.body.errors[0].msg).toBe('First Name is required!');
   });  
@@ -198,9 +203,9 @@ describe('POST /api/v1/users', () => {
         email: 'michael-jackson@moonwalker.com',
         role: 'regular',
         password: 'secret-password',
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
+      });
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.ok).toBe(false);
     expect(response.body.errors[0].msg).toBe('Last Name is required!');
   });
@@ -214,9 +219,9 @@ describe('POST /api/v1/users', () => {
         lastName: 'Jackson',
         role: 'regular',
         password: 'secret-password',
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
+      });
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.ok).toBe(false);
     expect(response.body.errors[0].msg).toBe('Email is required!');
   });
@@ -231,9 +236,9 @@ describe('POST /api/v1/users', () => {
         email: 'michael-jackson-moonwalker',
         role: 'regular',
         password: 'secret-password',
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
+      });
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.ok).toBe(false);
     expect(response.body.errors[0].msg).toBe('Email is not valid!');
   });
@@ -245,15 +250,15 @@ describe('POST /api/v1/users', () => {
       .send({
         firstName: 'Michael',
         lastName: 'Jackson',
-        email: usersList[0].email,
+        email: users[0].email,
         role: 'regular',
         password: 'secret-password',
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
-    expect(response.body.errors[0].msg).toBe(`Email: "${usersList[0].email}" already exists!`);
+      });
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
+    expect(response.body.errors[0].msg).toBe(`Email: "${users[0].email}" already exists!`);
   });
-  test('Responds with status 400 if image url is empty!', async () => {
+  test('Responds with status 400 if image is empty!', async () => {
     const response = await request(app)
       .post('/api/v1/users')
       .set('Accept', 'application/json')
@@ -264,10 +269,10 @@ describe('POST /api/v1/users', () => {
         email: 'michael-jackson@moonwalker.com',
         role: 'regular',
         password: 'secret-password',
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
-    expect(response.body.errors[0].msg).toBe('Image is required!');
+      });
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
+    expect(response.body.msg).toBe('No image was provided!');
   });
   test('Responds with status 400 if role is not a valid role', async () => {
     const response = await request(app)
@@ -281,9 +286,9 @@ describe('POST /api/v1/users', () => {
         image: 'michael-jackson.jpg',
         role: 'vip',
         password: 'secret-password',
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
+      });
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.ok).toBe(false);
     expect(response.body.errors[0].msg).toBe('Role: "vip" is invalid!');
   });
@@ -297,9 +302,9 @@ describe('POST /api/v1/users', () => {
         lastName: 'Jackson',
         email: 'michael-jackson@moonwalker.com',
         image: 'michael-jackson.jpg',
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
+      });
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.ok).toBe(false);
     expect(response.body.errors[0].msg).toBe('Password is required!');
   });
@@ -315,9 +320,9 @@ describe('POST /api/v1/users', () => {
         image: 'michael-jackson.jpg',
         role: 'admin',
         password: '123',
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
+      });
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.ok).toBe(false);
     expect(response.body.errors[0].msg).toBe('Password must be at least 8 characters long!');
   });
@@ -326,17 +331,19 @@ describe('POST /api/v1/users', () => {
       firstName: 'Michael',
       lastName: 'Jackson',
       email: 'michael-jackson@moonwalker.com',
-      image: 'michael-jackson.jpg',
       password: 'secret-password',
       role: 'admin',
     };
+
     const response = await request(app)
       .post('/api/v1/users')
       .set('Accept', 'application/json')
       .set('x-token', token)
-      .send(newUser)
-      .expect('Content-Type', /application\/json/)
-      .expect(201);
+      .attach('image', imagePath)
+      .field(newUser);
+
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(201);
     expect(response.body).toEqual({
       ok: true,
       user: {
@@ -344,12 +351,18 @@ describe('POST /api/v1/users', () => {
         firstName: newUser.firstName,
         lastName: newUser.lastName,
         email: newUser.email,
-        image: newUser.image,
         role: newUser.role,
+        image: expect.any(String),
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       },
     });
+
+    const user = response.body.user;
+
+    //* Clear Image from Cloudinary
+    const publicId = user?.image.split('/').pop()?.split('.').shift();
+    await cloudinary.v2.uploader.destroy(`heroes/${publicId}`);
   });
 });
 
@@ -359,31 +372,29 @@ describe('PATCH /api/v1/users/:id', () => {
     const response = await request(app)
       .patch(`/api/v1/users/${id}`)
       .set('Accept', 'application/json')
-      .set('x-token', token)
-      .expect('Content-Type', /json/)
-      .expect(400);
+      .set('x-token', token);
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.errors[0].msg).toBe('Provided id is not a valid Mongo ID');
   });
   test('Responds with status code 404 if user is not found', async () => {
     const id = '6385cbca684dd769f24c045d';
-    await request(app)
+    const response = await request(app)
       .patch(`/api/v1/users/${id}`)
       .set('Accept', 'application/json')
-      .set('x-token', token)
-      .expect('Content-Type', /json/)
-      .expect(400)
-      .then(response => {
-        expect(response.body.errors[0].msg).toBe(`User with id: "${id}" does not exist!`);
-      });
+      .set('x-token', token);
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
+    expect(response.body.errors[0].msg).toBe(`User with id: "${id}" does not exist!`);
   });
   test('Responds with status 400 if body is empty', async () => {
     const response = await request(app)
       .patch(`/api/v1/users/${jackKirbyId}`)
       .set('Accept', 'application/json')
       .set('x-token', token)
-      .send({})
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
+      .send({});
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.ok).toBe(false);
     expect(response.body.errors[0].msg).toBe('Body cannot be empty!');
   });
@@ -393,11 +404,11 @@ describe('PATCH /api/v1/users/:id', () => {
       .set('Accept', 'application/json')
       .set('x-token', token)
       .send({
-        ...usersList[1],
+        ...users[1],
         firstName: '',
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
+      });
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.errors[0].msg).toBe('First Name cannot be empty!');
   });
   test('Responds with status 400 if first Name is empty', async () => {
@@ -406,11 +417,11 @@ describe('PATCH /api/v1/users/:id', () => {
       .set('Accept', 'application/json')
       .set('x-token', token)
       .send({
-        ...usersList[1],
+        ...users[1],
         lastName: '',
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
+      });
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.errors[0].msg).toBe('Last Name cannot be empty!');
   });
   test('Responds with status 400 if first Name is empty', async () => {
@@ -419,11 +430,13 @@ describe('PATCH /api/v1/users/:id', () => {
       .set('Accept', 'application/json')
       .set('x-token', token)
       .send({
-        ...usersList[1],
+        ...users[1],
         email: '',
       })
       .expect('Content-Type', /application\/json/)
       .expect(400);
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.errors[0].msg).toBe('Email cannot be empty!');
   });
   test('Responds with status 400 if first Name is empty', async () => {
@@ -432,11 +445,11 @@ describe('PATCH /api/v1/users/:id', () => {
       .set('Accept', 'application/json')
       .set('x-token', token)
       .send({
-        ...usersList[1],
+        ...users[1],
         email: 'jack-kirby-marvel',
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
+      });
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.errors[0].msg).toBe('Email is not valid!');
   });
   test('Responds with status 400 if email exists!', async () => {
@@ -445,25 +458,12 @@ describe('PATCH /api/v1/users/:id', () => {
       .set('Accept', 'application/json')
       .set('x-token', token)
       .send({
-        ...usersList[1],
-        email: usersList[0].email,
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
-    expect(response.body.errors[0].msg).toBe(`Email: "${usersList[0].email}" already exists!`);
-  });
-  test('Responds with status 400 if image url is empty!', async () => {
-    const response = await request(app)
-      .patch(`/api/v1/users/${jackKirbyId}`)
-      .set('Accept', 'application/json')
-      .set('x-token', token)
-      .send({
-        ...usersList[1],
-        image: '',
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
-    expect(response.body.errors[0].msg).toBe('Image is required!');
+        ...users[1],
+        email: users[0].email,
+      });
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
+    expect(response.body.errors[0].msg).toBe(`Email: "${users[0].email}" already exists!`);
   });
   test('Responds with status 400 if role is not a valid role', async () => {
     const response = await request(app)
@@ -471,11 +471,11 @@ describe('PATCH /api/v1/users/:id', () => {
       .set('Accept', 'application/json')
       .set('x-token', token)
       .send({
-        ...usersList[1],
+        ...users[1],
         role: 'vip',
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
+      });
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.ok).toBe(false);
     expect(response.body.errors[0].msg).toBe('Role: "vip" is invalid!');
   });
@@ -485,17 +485,17 @@ describe('PATCH /api/v1/users/:id', () => {
       .set('Accept', 'application/json')
       .set('x-token', token)
       .send({
-        ...usersList[1],
+        ...users[1],
         password: '123',
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(400);
+      });
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.ok).toBe(false);
     expect(response.body.errors[0].msg).toBe('Password must be at least 8 characters long!');
   });
   test('Responds with status 200 if user is updated', async () => {
     const updatedUser = {
-      ...usersList[1],
+      ...users[1],
       role: 'regular',
       password: 'another-brick-on-the-wall',
     };
@@ -504,21 +504,30 @@ describe('PATCH /api/v1/users/:id', () => {
       .patch(`/api/v1/users/${jackKirbyId}`)
       .set('Accept', 'application/json')
       .set('x-token', token)
-      .send(updatedUser)
+      .attach('image', imagePath)
+      .field(updatedUser)
       .expect('Content-Type', /application\/json/)
       .expect(200);
 
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(200);
     expect(response.body.ok).toBe(true);
     expect(response.body.user).toEqual({
       _id: expect.any(String),
       firstName: updatedUser.firstName,
       lastName: updatedUser.lastName,
       email: updatedUser.email,
-      image: updatedUser.image,
+      image: expect.any(String),
       role: updatedUser.role,
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
+
+    const user = response.body.user;
+  
+    //* Clear Image from Cloudinary
+    const publicId = user?.image.split('/').pop()?.split('.').shift();
+    await cloudinary.v2.uploader.destroy(`heroesusers/${publicId}`);
   });
 });
 
@@ -528,9 +537,9 @@ describe('DELETE /api/v1/users/:id', () => {
     const response = await request(app)
       .delete(`/api/v1/users/${id}`)
       .set('Accept', 'application/json')
-      .set('x-token', token)
-      .expect('Content-Type', /json/)
-      .expect(400);
+      .set('x-token', token);
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.errors[0].msg).toBe('Provided id is not a valid Mongo ID');
   });
   test('Responds with status code 404 hero is not found', async () => {
@@ -538,19 +547,22 @@ describe('DELETE /api/v1/users/:id', () => {
     const response = await request(app)
       .delete(`/api/v1/users/${id}`)
       .set('Accept', 'application/json')
-      .set('x-token', token)
-      .expect('Content-Type', /json/)
-      .expect(400);
+      .set('x-token', token);
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(400);
     expect(response.body.errors[0].msg).toBe(`User with id: "${id}" does not exist!`);
   });
   test('Responds with status code 200 after user deleted', async () => {
     const response = await request(app)
       .delete(`/api/v1/users/${jackKirbyId}`)
       .set('Accept', 'application/json')
-      .set('x-token', token)
-      .expect('Content-Type', /application\/json/)
-      .expect(200);
-    expect(response.body.ok).toBe(true);
+      .set('x-token', token);
+    expect(response.headers['content-type']).toMatch(/application\/json/);
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      ok: true,
+      msg: 'User was deleted successfully',
+    });
   });
 });
 
